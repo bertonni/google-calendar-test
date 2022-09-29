@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { IAuthContext, IFormInputs } from "../@types/types";
-import api from "../assets/api";
+// import api from "../assets/api";
+import axios from "axios";
 import { useAuthContext } from "../contexts/AuthContext";
 
 const schema = yup
@@ -27,7 +28,7 @@ const AddEvent = () => {
     resolver: yupResolver(schema),
   });
 
-  const { loggedUser, accessToken } = useAuthContext() as IAuthContext;
+  const { loggedUser, credentials, accessToken } = useAuthContext() as IAuthContext;
 
   const onSubmit = async (data: IFormInputs) => {
     const config = {
@@ -38,11 +39,10 @@ const AddEvent = () => {
 
     const sendData = {
       user: JSON.stringify(loggedUser),
-      token: accessToken,
       formData: JSON.stringify(data),
     };
 
-    const res = await api.post("/api/add-event", sendData, config);
+    const res = await axios.post("http://localhost:8080/api/add-event", sendData, config);
     const response = res.data;
     console.log(response);
   };

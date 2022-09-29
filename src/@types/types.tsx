@@ -1,4 +1,4 @@
-import { User } from "firebase/auth";
+import { IdTokenResult, User } from "firebase/auth";
 
 export interface IAuthContext {
   loggedUser: User | null;
@@ -8,6 +8,7 @@ export interface IAuthContext {
   setLoggedUser: (user: User) => void;
   signin: () => void;
   logout: () => void;
+  credentials: IdTokenResult | null;
   accessToken: string;
 }
 

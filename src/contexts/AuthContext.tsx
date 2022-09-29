@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, User } from "firebase/auth";
+import { GoogleAuthProvider, IdTokenResult, onAuthStateChanged, signInWithPopup, signOut, User } from "firebase/auth";
 import {
   useState,
   createContext,
@@ -23,6 +23,7 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
   const [accessToken, setAccessToken] = useState<string>('');
+  const [credentials, setCredentials] = useState<IdTokenResult | null>(null);
 
   const navigate = useNavigate();
 
@@ -82,12 +83,13 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
       error,
       loadingInitial,
       accessToken,
+      credentials,
       setError,
       signin,
       logout,
       setLoggedUser,
     }),
-    [loggedUser, error]
+    [loggedUser, credentials, accessToken, error]
   );
 
   return (

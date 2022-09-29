@@ -13,7 +13,7 @@ const Login = () => {
       <div className="h-full w-full flex flex-col items-center justify-center">
         <button
           onClick={signin}
-          className="px-4 py-2 bg-sky-500 text-white font-medium"
+          className="px-4 py-2 bg-sky-500 text-white font-medium rounded hover:brightness-110"
         >
           Login with Google
         </button>
