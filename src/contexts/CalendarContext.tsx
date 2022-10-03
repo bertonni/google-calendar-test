@@ -1,25 +1,104 @@
-import { gapi } from "gapi-script";
-import { createContext, FC, PropsWithChildren, ReactNode, useContext, useMemo, useState } from "react";
-import { CalendarContextType, IEvent } from "../@types/types";
+import axios, { AxiosError, AxiosResponse } from "axios";
+import {
+  createContext,
+  FC,
+  PropsWithChildren,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import { IAuthContext, ICalendarContextType, IEvent, IMessage } from "../@types/types";
+import { useAuthContext } from "./AuthContext";
 
-const CalendarContext = createContext<CalendarContextType | null>(null);
+const CalendarContext = createContext<ICalendarContextType | null>(null);
 
-export const useProductStock = () => {
+export const useCalendarContext = () => {
   return useContext(CalendarContext);
 };
 
-const CalendarProvider: FC<PropsWithChildren<ReactNode>> = ({ children }) => {
+const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
+  const [urlBase] = useState<string>(
+    "https://www.googleapis.com/calendar/v3/calendars"
+  );
 
-  const [event, setEvent] = useState(null);
-  // const getEvents = (calendarID, apiKey) => {
-  //   function initiate() {
-  //     gapi.client.init({
-        
-  //     })
-  //   }
-  // }
+  const [events, setEvents] = useState<IEvent[] | null>(null);
+  const [message, setMessage] = useState<IMessage | null>(null);
+  const { accessToken } = useAuthContext() as IAuthContext;
 
-  const memoedValues = useMemo(() => event, [event])
+  // list -> get /events
+  // insert -> post /calendarId/events
+  // delete -> delete /calendarId/events/eventId
+
+  const listEvents = () => {
+    const url = `${urlBase}/${import.meta.env.VITE_CALENDAR_ID}/events`;
+
+    axios
+      .get(url)
+      .then((res: AxiosResponse) => {
+        setEvents(res.data.items);
+      })
+      .catch((err: AxiosError) => console.log(err.message));
+  };
+
+  const insertEvent = (event: IEvent) => {
+    const url = `${urlBase}/${import.meta.env.VITE_CALENDAR_ID}/events`;
+    const config = {
+      headers: {
+        "content-type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
+    };
+
+    const data = JSON.stringify(event);
+
+    axios
+      .post(url, data, config)
+      .then((res: AxiosResponse) => setMessage({ type: "success", message: "Event created successfuly!"}))
+      .catch((err: AxiosError) => {
+        console.log('error', err.message);
+        const message: IMessage = {
+          type: "error",
+          message:
+            "You have no authorization to create an event on this calendar",
+        };
+        if (err.response?.status === 401) {
+          message.code = 401;
+          setMessage(message);
+        } else {
+          message.message = `An error has occurred: ${err.message}`;
+          setMessage(message);
+        }
+      });
+  };
+
+  const deleteEvent = (eventId: string) => {
+    const url = `${urlBase}/${
+      import.meta.env.VITE_CALENDAR_ID
+    }/events/${eventId}`;
+    const config = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
+
+    axios
+      .delete(url, config)
+      .then((res: AxiosResponse) => console.log(res.data))
+      .catch((err: AxiosError) => console.log(err.message));
+  };
+
+  const memoedValues = useMemo(
+    () => ({
+      events,
+      message,
+      urlBase,
+      setMessage,
+      listEvents,
+      insertEvent,
+      deleteEvent,
+    }),
+    [events, message]
+  );
 
   return (
     <CalendarContext.Provider value={memoedValues}>
@@ -28,3 +107,4 @@ const CalendarProvider: FC<PropsWithChildren<ReactNode>> = ({ children }) => {
   );
 };
 
+export default CalendarProvider;

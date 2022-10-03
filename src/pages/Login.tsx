@@ -10,13 +10,18 @@ const Login = () => {
 
   return (
     <Layout>
-      <div className="h-full w-full flex flex-col items-center justify-center">
+      <div className="h-full w-full flex flex-col items-center justify-center gap-2">
         <button
           onClick={signin}
           className="px-4 py-2 bg-sky-500 text-white font-medium rounded hover:brightness-110"
         >
           Login with Google
         </button>
+        {/* <a href="http://localhost:8080/auth/google"
+          className="px-4 py-2 bg-sky-500 text-white font-medium rounded hover:brightness-110"
+        >
+          Login with Google 2
+        </a> */}
       </div>
     </Layout>
   );

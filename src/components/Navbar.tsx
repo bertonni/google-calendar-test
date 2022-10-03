@@ -7,9 +7,10 @@ const Navbar = () => {
   const { loggedUser, logout } = useAuthContext() as IAuthContext;
 
   return (
-    <div className="absolute top-0 left-0 right-0 py-4 flex items-center justify-center gap-4 z-10 w-full">
+    <div className="absolute top-0 left-0 right-0 py-4 flex items-center flex-wrap justify-center gap-4 z-10 w-full">
       <Link className='font-medium text-gray-600' to={"/"}>Home</Link>
       {loggedUser && <Link className='font-medium text-gray-600' to={"/add"}>Add Event</Link>}
+      {loggedUser && <Link className='font-medium text-gray-600' to={"/events"}>My Events</Link>}
       <Link className='font-medium text-gray-600' to={"/terms"}>Terms</Link>
       <Link className='font-medium text-gray-600' to={"/policy"}>Policy</Link>
       {loggedUser && (

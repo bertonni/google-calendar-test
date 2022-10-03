@@ -1,4 +1,15 @@
-import { GoogleAuthProvider, IdTokenResult, onAuthStateChanged, signInWithPopup, signOut, User } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  IdTokenResult,
+  inMemoryPersistence,
+  onAuthStateChanged,
+  onIdTokenChanged,
+  setPersistence,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+  User,
+} from "firebase/auth";
 import {
   useState,
   createContext,
@@ -22,12 +33,23 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const [loggedUser, setLoggedUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
-  const [accessToken, setAccessToken] = useState<string>('');
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<IdTokenResult | null>(null);
 
   const navigate = useNavigate();
 
+  // useEffect(() => {
+
+  //   console.log(loggedUser);
+
+  //   loggedUser
+  //     ?.getIdToken()
+  //     .then((res) => console.log('res', res))
+  //     .catch((err) => console.log('err', err));
+  // }, [loggedUser]);
+
   useEffect(() => {
+    console.log(loggedUser);
     onAuthStateChanged(auth, (user) => {
       if (user) {
         // User is signed in, see docs for a list of available properties
@@ -41,6 +63,19 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     });
   }, [loggedUser]);
 
+  const forceRefreshToken = async () => {
+
+    if (loggedUser) {
+      await loggedUser
+        .getIdToken(true)
+        .then((res) => {
+          console.log('res', res);
+          setAccessToken(res);
+        })
+        .catch((err) => console.log("err", err));
+    }
+  };
+
   const signin = () => {
     signInWithPopup(auth, provider)
       .then((result) => {
@@ -51,6 +86,7 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
         if (token) setAccessToken(token);
         // The signed-in user info.
         const user = result.user;
+        console.log(user, token);
         setLoggedUser(user);
         navigate("/add");
       })
@@ -70,12 +106,13 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
       .then(() => {
         // Sign-out successful.
         setLoggedUser(null);
+        setAccessToken(null);
       })
       .catch((error) => {
         // An error happened
         console.log(error);
       });
-  }
+  };
 
   const memoedValues = useMemo(
     () => ({
@@ -85,6 +122,7 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
       accessToken,
       credentials,
       setError,
+      forceRefreshToken,
       signin,
       logout,
       setLoggedUser,

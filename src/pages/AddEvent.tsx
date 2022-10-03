@@ -1,19 +1,41 @@
-import React from "react";
 import Layout from "../components/Layout";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { IAuthContext, IFormInputs } from "../@types/types";
-// import api from "../assets/api";
-import axios from "axios";
+import { IAuthContext, ICalendarContextType, IEvent, IFormInputs } from "../@types/types";
+import Alert from "../components/Alert";
+import { useCalendarContext } from "../contexts/CalendarContext";
+import moment from "moment";
+import { useState } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
 
 const schema = yup
   .object({
-    title: yup.string().required("field required"),
+    title: yup.string().required("Title field is required"),
     description: yup.string(),
-    start: yup.date().required("filed required"),
-    end: yup.date(),
+    date: yup.string().required("Date field is required"),
+    start: yup
+      .string()
+      .required("start time cannot be empty")
+      .test(
+        "is-greater",
+        "Start time must be before end time",
+        function (value) {
+          const { end } = this.parent;
+          return moment(value, "HH:mm").isSameOrBefore(moment(end, "HH:mm"));
+        }
+      ),
+    end: yup
+      .string()
+      .required("start time cannot be empty")
+      .test(
+        "is-greater",
+        "Start time must be before end time",
+        function (value) {
+          const { start } = this.parent;
+          return moment(value, "HH:mm").isSameOrAfter(moment(start, "HH:mm"));
+        }
+      ),
     location: yup.string(),
     recurrence: yup.string(),
   })
@@ -28,96 +50,248 @@ const AddEvent = () => {
     resolver: yupResolver(schema),
   });
 
-  const { loggedUser, credentials, accessToken } = useAuthContext() as IAuthContext;
+  const [dayOfWeek, setDayOfWeek] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [weekNumber, setWeekNumber] = useState<string | null>(null);
 
-  const onSubmit = async (data: IFormInputs) => {
-    const config = {
-      headers: {
-        "content-type": "application/json",
+  const { forceRefreshToken } = useAuthContext() as IAuthContext;
+
+  const { insertEvent, message, setMessage } =
+    useCalendarContext() as ICalendarContextType;
+
+  const formatDateTime = (date: string, hour: string) => {
+    return `${date}T${hour}:00`;
+  };
+
+  const handleDateChange = (value: string) => {
+    if (value.length === 0) {
+      setDayOfWeek("");
+      setWeekNumber(null);
+      setSelectedDate(null);
+      return;
+    }
+    const days = [
+      "domingo",
+      "segunda-feira",
+      "terça-feira",
+      "quarta-feira",
+      "quinta-feira",
+      "sexta-feira",
+      "sábado",
+    ];
+    const months = [
+      "janeiro",
+      "fevereiro",
+      "março",
+      "abril",
+      "maio",
+      "junho",
+      "julho",
+      "agosto",
+      "setembro",
+      "outubro",
+      "novembro",
+      "dezembro",
+    ];
+    const weeks = [
+      "primeiro(a)",
+      "segundo(a)",
+      "terceiro(a)",
+      "quarto(a)",
+      "quinto(a)",
+    ];
+    const newDate = new Date(value);
+    const dayOfWeek = days[newDate.getUTCDay()];
+    const dayOfMonth = newDate.getUTCDate();
+    const month = newDate.getUTCMonth();
+    const day = newDate.getUTCDay();
+
+    const weekOfMonth = Math.ceil((dayOfMonth - 1 - day) / 7);
+
+    setWeekNumber(weeks[weekOfMonth - 1]);
+    setSelectedDate(`${dayOfMonth} de ${months[month]}`);
+    setDayOfWeek(dayOfWeek);
+  };
+
+  const onSubmit = (data: IFormInputs) => {
+    /**
+     *
+     * RRULE:FREQ=WEEKLY;COUNT=5;BYDAY=TU,FR;UNTIL=20220922T150000Z
+     * FREQ — The frequency with which the event should be repeated (such as DAILY or WEEKLY). Required.
+     * INTERVAL — Works together with FREQ to specify how often the event should be repeated.
+     *  For example, FREQ=DAILY;INTERVAL=2 means once every two days.
+     * COUNT — Number of times this event should be repeated.
+     *  You can use either COUNT or UNTIL to specify the end of the event recurrence. Don't use both in the same rule.
+     * UNTIL — The date or date-time until which the event should be repeated (inclusive).
+     * BYDAY — Days of the week on which the event should be repeated (SU, MO, TU, etc.). Other similar
+     *  components include BYMONTH, BYYEARDAY, and BYHOUR.
+     *
+     */
+    const days = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+    const daysFull = [
+      "domingo",
+      "segunda-feira",
+      "terça-feira",
+      "quarta-feira",
+      "quinta-feira",
+      "sexta-feira",
+      "sábado",
+    ];
+
+    let recurr = "";
+    if (data.recurrence !== "no") {
+      recurr += "RRULE:FREQ=";
+      switch (data.recurrence) {
+        case "daily":
+          recurr += "DAILY;";
+          break;
+        case "weekly":
+          const index = daysFull.indexOf(dayOfWeek);
+          recurr += `WEEKLY;BYDAY=${days[index]};`;
+          break;
+        case "monthly":
+          recurr += "MONTHLY;";
+          break;
+        case "yearly":
+          recurr += "YEARLY;";
+          break;
+        case "every-day":
+          recurr += "WEEKLY;BYDAY=MO,TU,WE,TH,FR;";
+          break;
+        default:
+          break;
+      }
+    }
+
+    const event: IEvent = {
+      summary: data.title,
+      description: data.description,
+      start: {
+        dateTime: formatDateTime(data.date, data.start),
+        timeZone: "America/Recife",
+      },
+      end: {
+        dateTime: formatDateTime(data.date, data.end),
+        timeZone: "America/Recife",
       },
     };
 
-    const sendData = {
-      user: JSON.stringify(loggedUser),
-      formData: JSON.stringify(data),
-    };
+    if (data.recurrence !== "no") event["recurrence"] = [recurr];
 
-    const res = await axios.post("http://localhost:8080/api/add-event", sendData, config);
-    const response = res.data;
-    console.log(response);
+    insertEvent(event);
   };
 
   return (
     <Layout>
-      <div className="h-full flex flex-col gap-6 items-center justify-center px-40">
+      <div className="h-full flex flex-col gap-6 items-center justify-center px-40 relative">
         <h1 className="text-2xl text-gray-600 font-medium">Add Event</h1>
+
         <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-          <div className="flex flex-col gap-1 py-2">
+          <div className="flex flex-col gap-1 py-1">
+            <label htmlFor="summary" className="font-medium text-gray-600">
+              Título
+            </label>
             <input
+              id="summary"
               className="input"
               autoComplete="off"
               placeholder="title"
               {...register("title")}
             />
-            <p className="text-rose-500 text-sm">{errors.title?.message}</p>
           </div>
 
-          <div className="flex flex-col gap-1 py-2">
+          <div className="flex flex-col gap-1 py-1">
+            <label htmlFor="description" className="font-medium text-gray-600">
+              Descrição
+            </label>
             <input
+              id="description"
               className="input"
               autoComplete="off"
               placeholder="description"
               {...register("description")}
             />
-            <p className="text-rose-500 text-sm">
-              {errors.description?.message}
-            </p>
           </div>
-
-          <div className="flex flex-col gap-1 py-2">
-            <input
-              className="input"
-              autoComplete="off"
-              placeholder="start"
-              {...register("start")}
-              type="datetime-local"
-            />
-            <p className="text-rose-500 text-sm">{errors.start?.message}</p>
+          <div className="flex items-center justify-center w-full gap-2">
+            <div className="flex flex-col gap-1 py-1 w-full">
+              <label htmlFor="date" className="font-medium text-gray-600">
+                Data
+              </label>
+              <input
+                id="date"
+                className="input"
+                autoComplete="off"
+                placeholder="date"
+                type="date"
+                {...register("date")}
+                onChange={(val) => handleDateChange(val.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1 py-1">
+              <label htmlFor="start" className="font-medium text-gray-600">
+                Hora Início
+              </label>
+              <input
+                id="start"
+                className="input"
+                autoComplete="off"
+                placeholder="start"
+                {...register("start")}
+                type="time"
+              />
+            </div>
+            <div className="flex flex-col gap-1 py-1">
+              <label htmlFor="end" className="font-medium text-gray-600">
+                Hora Fim
+              </label>
+              <input
+                id="end"
+                className="input"
+                autoComplete="off"
+                placeholder="end"
+                {...register("end")}
+                type="time"
+              />
+            </div>
           </div>
-
-          <div className="flex flex-col gap-1 py-2">
+          <div className="flex flex-col gap-1 py-1">
+            <label htmlFor="location" className="font-medium text-gray-600">
+              Localização
+            </label>
             <input
-              className="input"
-              autoComplete="off"
-              placeholder="end"
-              {...register("end")}
-              type="datetime-local"
-            />
-            <p className="text-rose-500 text-sm">{errors.end?.message}</p>
-          </div>
-
-          <div className="flex flex-col gap-1 py-2">
-            <input
+              id="location"
               className="input"
               autoComplete="off"
               placeholder="location"
               {...register("location")}
             />
-            <p className="text-rose-500 text-sm">{errors.location?.message}</p>
           </div>
-
-          <div className="flex flex-col gap-1 py-2">
-            <input
-              className="input"
-              autoComplete="off"
-              placeholder="recurrence"
-              {...register("recurrence")}
-            />
-            <p className="text-rose-500 text-sm">
-              {errors.recurrence?.message}
-            </p>
-          </div>
-          <div className="flex items-center justify-center">
+          {dayOfWeek.length > 0 && (
+            <div className="flex flex-col gap-1 py-2">
+              <label htmlFor="recurrence" className="font-medium text-gray-600">
+                Recorrência
+              </label>
+              <select
+                id="recurrence"
+                className="input"
+                autoComplete="off"
+                placeholder="recurrence"
+                {...register("recurrence")}
+              >
+                <option value="no">Não se repete</option>
+                <option value="daily">Todos os dias</option>
+                <option value="weekly">Semanal: cada {dayOfWeek}</option>
+                <option value="monthly">
+                  Mensal: no(a) {weekNumber} {dayOfWeek}
+                </option>
+                <option value="yearly">Anual em {selectedDate}</option>
+                <option value="every-day">
+                  Todos os dias da semana (segunda a sexta-feira)
+                </option>
+              </select>
+            </div>
+          )}
+          <div className="flex items-center justify-center mt-2">
             <input
               className="input px-4 bg-emerald-400 border-emerald-600 text-white w-32
                 cursor-pointer hover:brightness-125"
@@ -125,7 +299,54 @@ const AddEvent = () => {
             />
           </div>
         </form>
+        {Object.keys(errors).length > 0 && (
+          <div
+            className="w-full rounded border border-rose-700 bg-rose-200 flex flex-col
+            justify-center py-2 px-4 gap-2"
+          >
+            <h1 className="text-rose-500 font-medium text-lg">Errors:</h1>
+            <ul className="">
+              <li>
+                <p className="text-rose-500">{errors.title?.message}</p>
+              </li>
+              <li>
+                <p className="text-rose-500">{errors.description?.message}</p>
+              </li>
+              <li>
+                <p className="text-rose-500">{errors.date?.message}</p>
+              </li>
+              <li>
+                <p className="text-rose-500">{errors.start?.message}</p>
+              </li>
+              <li>
+                <p className="text-rose-500">{errors.end?.message}</p>
+              </li>
+              <li>
+                <p className="text-rose-500">{errors.recurrence?.message}</p>
+              </li>
+            </ul>
+          </div>
+        )}
+        {message && message.code === 401 && (
+          <button
+            className="px-4 bg-emerald-400 border-emerald-600 text-white w-fit py-2
+              cursor-pointer hover:brightness-125 rounded self-center border"
+            onClick={forceRefreshToken}
+          >
+            Refresh Token
+          </button>
+        )}
       </div>
+      {message && (
+        <Alert
+          close={() => {
+            setMessage(null);
+          }}
+          variant={message.type}
+          message={message.message}
+        />
+      )}
+
     </Layout>
   );
 };
