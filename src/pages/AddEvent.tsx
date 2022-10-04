@@ -2,12 +2,13 @@ import Layout from "../components/Layout";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { IAuthContext, ICalendarContextType, IEvent, IFormInputs } from "../@types/types";
+import { IAuthContext, ICalendarContext, IEvent, IFormInputs } from "../@types/types";
 import Alert from "../components/Alert";
 import { useCalendarContext } from "../contexts/CalendarContext";
 import moment from "moment";
 import { useState } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const schema = yup
   .object({
@@ -27,7 +28,7 @@ const schema = yup
       ),
     end: yup
       .string()
-      .required("start time cannot be empty")
+      .required("end time cannot be empty")
       .test(
         "is-greater",
         "Start time must be before end time",
@@ -45,6 +46,7 @@ const AddEvent = () => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<IFormInputs>({
     resolver: yupResolver(schema),
@@ -53,11 +55,14 @@ const AddEvent = () => {
   const [dayOfWeek, setDayOfWeek] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [weekNumber, setWeekNumber] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const { forceRefreshToken } = useAuthContext() as IAuthContext;
+  const { forceRefreshToken, loggedUser } = useAuthContext() as IAuthContext;
+
+  if (!loggedUser) return <Navigate to={"/login"} />
 
   const { insertEvent, message, setMessage } =
-    useCalendarContext() as ICalendarContextType;
+    useCalendarContext() as ICalendarContext;
 
   const formatDateTime = (date: string, hour: string) => {
     return `${date}T${hour}:00`;
@@ -127,6 +132,7 @@ const AddEvent = () => {
      *  components include BYMONTH, BYYEARDAY, and BYHOUR.
      *
      */
+    setLoading(true);
     const days = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
     const daysFull = [
       "domingo",
@@ -141,15 +147,15 @@ const AddEvent = () => {
     let recurr = "";
     if (data.recurrence !== "no") {
       recurr += "RRULE:FREQ=";
+      const index = daysFull.indexOf(dayOfWeek);
       switch (data.recurrence) {
         case "daily":
           recurr += "DAILY;";
           break;
         case "weekly":
-          const index = daysFull.indexOf(dayOfWeek);
           recurr += `WEEKLY;BYDAY=${days[index]};`;
           break;
-        case "monthly":
+          case "monthly":
           recurr += "MONTHLY;";
           break;
         case "yearly":
@@ -174,11 +180,19 @@ const AddEvent = () => {
         dateTime: formatDateTime(data.date, data.end),
         timeZone: "America/Recife",
       },
+      creator: {
+        id: loggedUser?.uid,
+        email: loggedUser?.email ?? '',
+        displayName: loggedUser?.displayName ?? '',
+        self: false
+      }
     };
 
     if (data.recurrence !== "no") event["recurrence"] = [recurr];
 
     insertEvent(event);
+    setLoading(false);
+    reset();
   };
 
   return (
@@ -292,11 +306,10 @@ const AddEvent = () => {
             </div>
           )}
           <div className="flex items-center justify-center mt-2">
-            <input
+            <button
               className="input px-4 bg-emerald-400 border-emerald-600 text-white w-32
-                cursor-pointer hover:brightness-125"
-              type="submit"
-            />
+                cursor-pointer hover:brightness-110"
+              type="submit">{loading ? 'Loading...' : 'Enviar'}</button>
           </div>
         </form>
         {Object.keys(errors).length > 0 && (
@@ -330,7 +343,7 @@ const AddEvent = () => {
         {message && message.code === 401 && (
           <button
             className="px-4 bg-emerald-400 border-emerald-600 text-white w-fit py-2
-              cursor-pointer hover:brightness-125 rounded self-center border"
+              cursor-pointer hover:brightness-110 rounded self-center border"
             onClick={forceRefreshToken}
           >
             Refresh Token

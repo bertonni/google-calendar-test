@@ -9,8 +9,7 @@ export interface IAuthContext {
   signin: () => void;
   logout: () => void;
   forceRefreshToken: () => void;
-  credentials: IdTokenResult | null;
-  accessToken: string | null;
+  accessToken: string;
 }
 
 export interface IMessage {
@@ -26,8 +25,8 @@ export interface ILoggedUser {
   accessToken: string;
 }
 
-export type ICalendarContextType = {
-  events: IEvent[] | null;
+export type ICalendarContext = {
+  events: IEvent[] | [];
   message: IMessage | null;
   urlBase: string;
   setMessage: (value: IMessage | null) => void;

@@ -1,12 +1,7 @@
 import {
   GoogleAuthProvider,
-  IdTokenResult,
-  inMemoryPersistence,
   onAuthStateChanged,
-  onIdTokenChanged,
-  setPersistence,
   signInWithPopup,
-  signInWithRedirect,
   signOut,
   User,
 } from "firebase/auth";
@@ -33,23 +28,12 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const [loggedUser, setLoggedUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [credentials, setCredentials] = useState<IdTokenResult | null>(null);
+  const tokenFromLocalStorage = localStorage.getItem('accessToken') ?? '';
+  const [accessToken, setAccessToken] = useState<string>(tokenFromLocalStorage);
 
   const navigate = useNavigate();
 
-  // useEffect(() => {
-
-  //   console.log(loggedUser);
-
-  //   loggedUser
-  //     ?.getIdToken()
-  //     .then((res) => console.log('res', res))
-  //     .catch((err) => console.log('err', err));
-  // }, [loggedUser]);
-
   useEffect(() => {
-    console.log(loggedUser);
     onAuthStateChanged(auth, (user) => {
       if (user) {
         // User is signed in, see docs for a list of available properties
@@ -69,7 +53,7 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
       await loggedUser
         .getIdToken(true)
         .then((res) => {
-          console.log('res', res);
+          localStorage.setItem('accessToken', res);
           setAccessToken(res);
         })
         .catch((err) => console.log("err", err));
@@ -83,7 +67,10 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
         const credential = GoogleAuthProvider.credentialFromResult(result);
         const token = credential?.accessToken;
 
-        if (token) setAccessToken(token);
+        if (token) {
+          localStorage.setItem('accessToken', token);
+          setAccessToken(token);
+        }
         // The signed-in user info.
         const user = result.user;
         console.log(user, token);
@@ -106,7 +93,8 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
       .then(() => {
         // Sign-out successful.
         setLoggedUser(null);
-        setAccessToken(null);
+        setAccessToken('');
+        localStorage.removeItem('accessToken');
       })
       .catch((error) => {
         // An error happened
@@ -120,14 +108,13 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
       error,
       loadingInitial,
       accessToken,
-      credentials,
       setError,
       forceRefreshToken,
       signin,
       logout,
       setLoggedUser,
     }),
-    [loggedUser, credentials, accessToken, error]
+    [loggedUser, accessToken, error]
   );
 
   return (

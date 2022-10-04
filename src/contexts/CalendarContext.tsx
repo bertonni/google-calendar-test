@@ -4,13 +4,14 @@ import {
   FC,
   PropsWithChildren,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
-import { IAuthContext, ICalendarContextType, IEvent, IMessage } from "../@types/types";
+import { IAuthContext, ICalendarContext, IEvent, IMessage } from "../@types/types";
 import { useAuthContext } from "./AuthContext";
 
-const CalendarContext = createContext<ICalendarContextType | null>(null);
+const CalendarContext = createContext<ICalendarContext | null>(null);
 
 export const useCalendarContext = () => {
   return useContext(CalendarContext);
@@ -21,9 +22,9 @@ const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
     "https://www.googleapis.com/calendar/v3/calendars"
   );
 
-  const [events, setEvents] = useState<IEvent[] | null>(null);
+  const [events, setEvents] = useState<IEvent[] | []>([]);
   const [message, setMessage] = useState<IMessage | null>(null);
-  const { accessToken } = useAuthContext() as IAuthContext;
+  const { accessToken, loggedUser } = useAuthContext() as IAuthContext;
 
   // list -> get /events
   // insert -> post /calendarId/events
@@ -31,9 +32,15 @@ const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const listEvents = () => {
     const url = `${urlBase}/${import.meta.env.VITE_CALENDAR_ID}/events`;
+    
+    const config = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
 
     axios
-      .get(url)
+      .get(url, config)
       .then((res: AxiosResponse) => {
         setEvents(res.data.items);
       })
