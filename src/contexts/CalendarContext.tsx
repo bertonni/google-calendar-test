@@ -4,7 +4,6 @@ import {
   FC,
   PropsWithChildren,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -24,13 +23,12 @@ const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const [events, setEvents] = useState<IEvent[] | []>([]);
   const [message, setMessage] = useState<IMessage | null>(null);
-  const { accessToken, loggedUser } = useAuthContext() as IAuthContext;
 
   // list -> get /events
   // insert -> post /calendarId/events
   // delete -> delete /calendarId/events/eventId
 
-  const listEvents = () => {
+  const listEvents = (accessToken: string) => {
     const url = `${urlBase}/${import.meta.env.VITE_CALENDAR_ID}/events`;
     
     const config = {
@@ -47,7 +45,7 @@ const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
       .catch((err: AxiosError) => console.log(err.message));
   };
 
-  const insertEvent = (event: IEvent) => {
+  const insertEvent = (event: IEvent, accessToken: string) => {
     const url = `${urlBase}/${import.meta.env.VITE_CALENDAR_ID}/events`;
     const config = {
       headers: {
@@ -78,7 +76,7 @@ const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
       });
   };
 
-  const deleteEvent = (eventId: string) => {
+  const deleteEvent = (eventId: string, accessToken: string) => {
     const url = `${urlBase}/${
       import.meta.env.VITE_CALENDAR_ID
     }/events/${eventId}`;

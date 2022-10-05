@@ -1,4 +1,4 @@
-import { IdTokenResult, User } from "firebase/auth";
+import { User } from "firebase/auth";
 
 export interface IAuthContext {
   loggedUser: User | null;
@@ -30,9 +30,9 @@ export type ICalendarContext = {
   message: IMessage | null;
   urlBase: string;
   setMessage: (value: IMessage | null) => void;
-  listEvents: () => void;
-  insertEvent: (event: IEvent) => void;
-  deleteEvent: (eventId: string) => void;
+  listEvents: (accessToken: string) => void;
+  insertEvent: (event: IEvent, accessToken: string) => void;
+  deleteEvent: (eventId: string, accessToken: string) => void;
 };
 
 
@@ -194,7 +194,6 @@ export interface IFormInputs {
 }
 
 export interface IAlertProps {
-  variant: "success" | "error" | "warning";
+  message: IMessage | null;
   close: () => void;
-  message: string;
 }

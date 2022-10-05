@@ -2,13 +2,20 @@ import Layout from "../components/Layout";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { IAuthContext, ICalendarContext, IEvent, IFormInputs } from "../@types/types";
+import {
+  IAuthContext,
+  ICalendarContext,
+  IEvent,
+  IFormInputs,
+} from "../@types/types";
 import Alert from "../components/Alert";
 import { useCalendarContext } from "../contexts/CalendarContext";
 import moment from "moment";
 import { useState } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
 import { Navigate } from "react-router-dom";
+import { days, weeks, months } from "../assets/data";
+import { AnimatePresence } from "framer-motion";
 
 const schema = yup
   .object({
@@ -57,9 +64,10 @@ const AddEvent = () => {
   const [weekNumber, setWeekNumber] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const { forceRefreshToken, loggedUser } = useAuthContext() as IAuthContext;
+  const { forceRefreshToken, loggedUser, accessToken } =
+    useAuthContext() as IAuthContext;
 
-  if (!loggedUser) return <Navigate to={"/login"} />
+  if (!loggedUser) return <Navigate to={"/login"} />;
 
   const { insertEvent, message, setMessage } =
     useCalendarContext() as ICalendarContext;
@@ -75,36 +83,7 @@ const AddEvent = () => {
       setSelectedDate(null);
       return;
     }
-    const days = [
-      "domingo",
-      "segunda-feira",
-      "terça-feira",
-      "quarta-feira",
-      "quinta-feira",
-      "sexta-feira",
-      "sábado",
-    ];
-    const months = [
-      "janeiro",
-      "fevereiro",
-      "março",
-      "abril",
-      "maio",
-      "junho",
-      "julho",
-      "agosto",
-      "setembro",
-      "outubro",
-      "novembro",
-      "dezembro",
-    ];
-    const weeks = [
-      "primeiro(a)",
-      "segundo(a)",
-      "terceiro(a)",
-      "quarto(a)",
-      "quinto(a)",
-    ];
+
     const newDate = new Date(value);
     const dayOfWeek = days[newDate.getUTCDay()];
     const dayOfMonth = newDate.getUTCDate();
@@ -155,7 +134,7 @@ const AddEvent = () => {
         case "weekly":
           recurr += `WEEKLY;BYDAY=${days[index]};`;
           break;
-          case "monthly":
+        case "monthly":
           recurr += "MONTHLY;";
           break;
         case "yearly":
@@ -182,17 +161,17 @@ const AddEvent = () => {
       },
       creator: {
         id: loggedUser?.uid,
-        email: loggedUser?.email ?? '',
-        displayName: loggedUser?.displayName ?? '',
-        self: false
-      }
+        email: loggedUser?.email ?? "",
+        displayName: loggedUser?.displayName ?? "",
+        self: false,
+      },
     };
 
     if (data.recurrence !== "no") event["recurrence"] = [recurr];
 
-    insertEvent(event);
+    insertEvent(event, accessToken);
     setLoading(false);
-    reset();
+    // reset();
   };
 
   return (
@@ -280,36 +259,37 @@ const AddEvent = () => {
               {...register("location")}
             />
           </div>
-          {dayOfWeek.length > 0 && (
-            <div className="flex flex-col gap-1 py-2">
-              <label htmlFor="recurrence" className="font-medium text-gray-600">
-                Recorrência
-              </label>
-              <select
-                id="recurrence"
-                className="input"
-                autoComplete="off"
-                placeholder="recurrence"
-                {...register("recurrence")}
-              >
-                <option value="no">Não se repete</option>
-                <option value="daily">Todos os dias</option>
-                <option value="weekly">Semanal: cada {dayOfWeek}</option>
-                <option value="monthly">
-                  Mensal: no(a) {weekNumber} {dayOfWeek}
-                </option>
-                <option value="yearly">Anual em {selectedDate}</option>
-                <option value="every-day">
-                  Todos os dias da semana (segunda a sexta-feira)
-                </option>
-              </select>
-            </div>
-          )}
+          <div className="flex flex-col gap-1 py-2">
+            <label htmlFor="recurrence" className="font-medium text-gray-600">
+              Recorrência
+            </label>
+            <select
+              id="recurrence"
+              className="input"
+              autoComplete="off"
+              placeholder="recurrence"
+              {...register("recurrence")}
+            >
+              <option value="no">Não se repete</option>
+              <option value="daily">Todos os dias</option>
+              <option value="weekly">Semanal: cada {dayOfWeek}</option>
+              <option value="monthly">
+                Mensal: no(a) {weekNumber} {dayOfWeek}
+              </option>
+              <option value="yearly">Anual em {selectedDate}</option>
+              <option value="every-day">
+                Todos os dias da semana (segunda a sexta-feira)
+              </option>
+            </select>
+          </div>
           <div className="flex items-center justify-center mt-2">
             <button
               className="input px-4 bg-emerald-400 border-emerald-600 text-white w-32
                 cursor-pointer hover:brightness-110"
-              type="submit">{loading ? 'Loading...' : 'Enviar'}</button>
+              type="submit"
+            >
+              {loading ? "Loading..." : "Enviar"}
+            </button>
           </div>
         </form>
         {Object.keys(errors).length > 0 && (
@@ -318,48 +298,23 @@ const AddEvent = () => {
             justify-center py-2 px-4 gap-2"
           >
             <h1 className="text-rose-500 font-medium text-lg">Errors:</h1>
-            <ul className="">
-              <li>
-                <p className="text-rose-500">{errors.title?.message}</p>
-              </li>
-              <li>
-                <p className="text-rose-500">{errors.description?.message}</p>
-              </li>
-              <li>
-                <p className="text-rose-500">{errors.date?.message}</p>
-              </li>
-              <li>
-                <p className="text-rose-500">{errors.start?.message}</p>
-              </li>
-              <li>
-                <p className="text-rose-500">{errors.end?.message}</p>
-              </li>
-              <li>
-                <p className="text-rose-500">{errors.recurrence?.message}</p>
-              </li>
-            </ul>
+            <div className="flex flex-col gap-1 justify-center">
+              <p className="text-rose-500">{errors.title?.message}</p>
+              <p className="text-rose-500">{errors.description?.message}</p>
+              <p className="text-rose-500">{errors.date?.message}</p>
+              <p className="text-rose-500">{errors.start?.message}</p>
+              <p className="text-rose-500">{errors.end?.message}</p>
+              <p className="text-rose-500">{errors.recurrence?.message}</p>
+            </div>
           </div>
         )}
-        {message && message.code === 401 && (
-          <button
-            className="px-4 bg-emerald-400 border-emerald-600 text-white w-fit py-2
-              cursor-pointer hover:brightness-110 rounded self-center border"
-            onClick={forceRefreshToken}
-          >
-            Refresh Token
-          </button>
-        )}
       </div>
-      {message && (
-        <Alert
-          close={() => {
-            setMessage(null);
-          }}
-          variant={message.type}
-          message={message.message}
-        />
-      )}
-
+      <Alert
+        close={() => {
+          setMessage(null);
+        }}
+        message={message}
+      />
     </Layout>
   );
 };

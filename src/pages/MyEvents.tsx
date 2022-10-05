@@ -1,5 +1,3 @@
-import axios, { AxiosError, AxiosResponse } from "axios";
-import React from "react";
 import { IAuthContext, ICalendarContext, IEvent } from "../@types/types";
 import Layout from "../components/Layout";
 import { useAuthContext } from "../contexts/AuthContext";
@@ -8,6 +6,10 @@ import { useCalendarContext } from "../contexts/CalendarContext";
 const MyEvents = () => {
   const { accessToken } = useAuthContext() as IAuthContext;
   const { events, listEvents } = useCalendarContext() as ICalendarContext;
+
+  const getEvents = () => {
+    listEvents(accessToken);
+  };
 
   return (
     <Layout>
@@ -29,7 +31,7 @@ const MyEvents = () => {
         </div>
         <button
           className="px-4 py-2 bg-amber-500 text-white font-medium rounded hover:brightness-110"
-          onClick={listEvents}
+          onClick={getEvents}
         >
           Get Events
         </button>
