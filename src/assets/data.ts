@@ -1,4 +1,4 @@
-export const days = [
+export const daysInPortuguese = [
   "domingo",
   "segunda-feira",
   "terça-feira",
@@ -27,4 +27,16 @@ export const weeks = [
   "terceiro(a)",
   "quarto(a)",
   "quinto(a)",
+];
+
+export const days = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+
+export const daysFull = [
+  "domingo",
+  "segunda-feira",
+  "terça-feira",
+  "quarta-feira",
+  "quinta-feira",
+  "sexta-feira",
+  "sábado",
 ];

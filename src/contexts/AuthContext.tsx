@@ -28,7 +28,7 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const [loggedUser, setLoggedUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
-  const tokenFromLocalStorage = localStorage.getItem('accessToken') ?? '';
+  const tokenFromLocalStorage = localStorage.getItem("accessToken") ?? "";
   const [accessToken, setAccessToken] = useState<string>(tokenFromLocalStorage);
 
   const navigate = useNavigate();
@@ -47,19 +47,6 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     });
   }, [loggedUser]);
 
-  const forceRefreshToken = async () => {
-
-    if (loggedUser) {
-      await loggedUser
-        .getIdToken(true)
-        .then((res) => {
-          localStorage.setItem('accessToken', res);
-          setAccessToken(res);
-        })
-        .catch((err) => console.log("err", err));
-    }
-  };
-
   const signin = () => {
     signInWithPopup(auth, provider)
       .then((result) => {
@@ -68,7 +55,7 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
         const token = credential?.accessToken;
 
         if (token) {
-          localStorage.setItem('accessToken', token);
+          localStorage.setItem("accessToken", token);
           setAccessToken(token);
         }
         // The signed-in user info.
@@ -93,8 +80,8 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
       .then(() => {
         // Sign-out successful.
         setLoggedUser(null);
-        setAccessToken('');
-        localStorage.removeItem('accessToken');
+        setAccessToken("");
+        localStorage.removeItem("accessToken");
       })
       .catch((error) => {
         // An error happened
@@ -109,7 +96,6 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
       loadingInitial,
       accessToken,
       setError,
-      forceRefreshToken,
       signin,
       logout,
       setLoggedUser,

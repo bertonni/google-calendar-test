@@ -8,12 +8,11 @@ export interface IAuthContext {
   setLoggedUser: (user: User) => void;
   signin: () => void;
   logout: () => void;
-  forceRefreshToken: () => void;
   accessToken: string;
 }
 
 export interface IMessage {
-  type: "success" | "error";
+  type: "successo" | "erro";
   message: string;
   code?: number;
 }
@@ -35,6 +34,19 @@ export type ICalendarContext = {
   deleteEvent: (eventId: string, accessToken: string) => void;
 };
 
+export interface IInputProps {
+  name?: string;
+  id?: string;
+  label?: string;
+  autocomplete?: boolean;
+  placeholder?: string;
+  refs?: any;
+  type?: string;
+  min?: string;
+  max?: string;
+  fullWidth?: boolean;
+  handleChange?: (val: string) => void;
+};
 
 export interface IAtendees {
   email: string

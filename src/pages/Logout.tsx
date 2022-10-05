@@ -1,4 +1,3 @@
-import { GoogleLogout } from "react-google-login";
 import Layout from "../components/Layout";
 
 const Logout = () => {

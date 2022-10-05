@@ -11,11 +11,17 @@ import {
 import Alert from "../components/Alert";
 import { useCalendarContext } from "../contexts/CalendarContext";
 import moment from "moment";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
 import { Navigate } from "react-router-dom";
-import { days, weeks, months } from "../assets/data";
-import { AnimatePresence } from "framer-motion";
+import {
+  daysInPortuguese,
+  weeks,
+  months,
+  daysFull,
+  days,
+} from "../assets/data";
+import Input from "../components/Input";
 
 const schema = yup
   .object({
@@ -64,13 +70,15 @@ const AddEvent = () => {
   const [weekNumber, setWeekNumber] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const { forceRefreshToken, loggedUser, accessToken } =
-    useAuthContext() as IAuthContext;
+  const { loggedUser, accessToken } = useAuthContext() as IAuthContext;
 
   if (!loggedUser) return <Navigate to={"/login"} />;
 
-  const { insertEvent, message, setMessage } =
-    useCalendarContext() as ICalendarContext;
+  const { insertEvent, message, setMessage } = useCalendarContext() as ICalendarContext;
+
+  useEffect(() => {
+    if (message?.type === "successo") reset();
+  }, [message]);
 
   const formatDateTime = (date: string, hour: string) => {
     return `${date}T${hour}:00`;
@@ -85,7 +93,7 @@ const AddEvent = () => {
     }
 
     const newDate = new Date(value);
-    const dayOfWeek = days[newDate.getUTCDay()];
+    const dayOfWeek = daysInPortuguese[newDate.getUTCDay()];
     const dayOfMonth = newDate.getUTCDate();
     const month = newDate.getUTCMonth();
     const day = newDate.getUTCDay();
@@ -112,16 +120,6 @@ const AddEvent = () => {
      *
      */
     setLoading(true);
-    const days = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-    const daysFull = [
-      "domingo",
-      "segunda-feira",
-      "terça-feira",
-      "quarta-feira",
-      "quinta-feira",
-      "sexta-feira",
-      "sábado",
-    ];
 
     let recurr = "";
     if (data.recurrence !== "no") {
@@ -171,101 +169,70 @@ const AddEvent = () => {
 
     insertEvent(event, accessToken);
     setLoading(false);
-    // reset();
   };
 
   return (
     <Layout>
-      <div className="h-full flex flex-col gap-6 items-center justify-center px-40 relative">
-        <h1 className="text-2xl text-gray-600 font-medium">Add Event</h1>
+      <div className="h-full flex flex-col gap-6 items-center px-40 relative">
+        <h1 className="text-3xl text-gray-600 font-medium">Criar Evento</h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-          <div className="flex flex-col gap-1 py-1">
-            <label htmlFor="summary" className="font-medium text-gray-600">
-              Título
-            </label>
-            <input
-              id="summary"
-              className="input"
-              autoComplete="off"
-              placeholder="title"
-              {...register("title")}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1 py-1">
-            <label htmlFor="description" className="font-medium text-gray-600">
-              Descrição
-            </label>
-            <input
-              id="description"
-              className="input"
-              autoComplete="off"
-              placeholder="description"
-              {...register("description")}
-            />
-          </div>
+          <Input
+            id="summary"
+            name="title"
+            label="Título"
+            placeholder="title"
+            refs={register}
+          />
+          <Input
+            id="description"
+            name="description"
+            label="Descrição"
+            placeholder="description"
+            refs={register}
+          />
           <div className="flex items-center justify-center w-full gap-2">
-            <div className="flex flex-col gap-1 py-1 w-full">
-              <label htmlFor="date" className="font-medium text-gray-600">
-                Data
-              </label>
-              <input
-                id="date"
-                className="input"
-                autoComplete="off"
-                placeholder="date"
-                type="date"
-                {...register("date")}
-                onChange={(val) => handleDateChange(val.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-1 py-1">
-              <label htmlFor="start" className="font-medium text-gray-600">
-                Hora Início
-              </label>
-              <input
-                id="start"
-                className="input"
-                autoComplete="off"
-                placeholder="start"
-                {...register("start")}
-                type="time"
-              />
-            </div>
-            <div className="flex flex-col gap-1 py-1">
-              <label htmlFor="end" className="font-medium text-gray-600">
-                Hora Fim
-              </label>
-              <input
-                id="end"
-                className="input"
-                autoComplete="off"
-                placeholder="end"
-                {...register("end")}
-                type="time"
-              />
-            </div>
-          </div>
-          <div className="flex flex-col gap-1 py-1">
-            <label htmlFor="location" className="font-medium text-gray-600">
-              Localização
-            </label>
-            <input
-              id="location"
-              className="input"
-              autoComplete="off"
-              placeholder="location"
-              {...register("location")}
+            <Input
+              id="date"
+              name="date"
+              label="Data"
+              placeholder="date"
+              handleChange={handleDateChange}
+              type="date"
+              refs={register}
+              fullWidth
+            />
+            <Input
+              id="start"
+              name="start"
+              label="Hora Início"
+              placeholder="start"
+              type="time"
+              refs={register}
+            />
+            <Input
+              id="end"
+              name="end"
+              label="Hora Fim"
+              placeholder="end"
+              type="time"
+              refs={register}
             />
           </div>
-          <div className="flex flex-col gap-1 py-2">
-            <label htmlFor="recurrence" className="font-medium text-gray-600">
+          <Input
+            id="location"
+            name="location"
+            label="Localização"
+            placeholder="location"
+            refs={register}
+          />
+          <div className="flex flex-col gap-1 py-2 group">
+            <label htmlFor="recurrence" className="font-medium text-gray-600 group-focus-within:text-sky-600">
               Recorrência
             </label>
             <select
               id="recurrence"
-              className="input"
+              className="input group-focus:outline outline-sky-600"
               autoComplete="off"
               placeholder="recurrence"
               {...register("recurrence")}

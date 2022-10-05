@@ -7,8 +7,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { IAuthContext, ICalendarContext, IEvent, IMessage } from "../@types/types";
-import { useAuthContext } from "./AuthContext";
+import { ICalendarContext, IEvent, IMessage } from "../@types/types";
 
 const CalendarContext = createContext<ICalendarContext | null>(null);
 
@@ -23,10 +22,6 @@ const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const [events, setEvents] = useState<IEvent[] | []>([]);
   const [message, setMessage] = useState<IMessage | null>(null);
-
-  // list -> get /events
-  // insert -> post /calendarId/events
-  // delete -> delete /calendarId/events/eventId
 
   const listEvents = (accessToken: string) => {
     const url = `${urlBase}/${import.meta.env.VITE_CALENDAR_ID}/events`;
@@ -58,13 +53,12 @@ const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
 
     axios
       .post(url, data, config)
-      .then((res: AxiosResponse) => setMessage({ type: "success", message: "Event created successfuly!"}))
+      .then((res: AxiosResponse) => setMessage({ type: "successo", message: "Evento criado com sucesso!"}))
       .catch((err: AxiosError) => {
-        console.log('error', err.message);
         const message: IMessage = {
-          type: "error",
+          type: "erro",
           message:
-            "You have no authorization to create an event on this calendar",
+            "Houve um erro ao tentar criar o evento!",
         };
         if (err.response?.status === 401) {
           message.code = 401;

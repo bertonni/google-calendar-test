@@ -1,5 +1,12 @@
 import { IAlertProps } from "../@types/types";
 import { motion, Variants, AnimatePresence } from "framer-motion";
+import {
+  CheckCircleIcon,
+  InformationCircleIcon,
+  XCircleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { useState } from "react";
 
 const variants: Variants = {
   initial: { y: 30, opacity: 0 },
@@ -8,24 +15,26 @@ const variants: Variants = {
 };
 
 const Alert = ({ message, close }: IAlertProps) => {
+  const [tooltipStatus, setTooltipStatus] = useState<number>(0);
+
   const text =
-    message?.type === "error"
+    message?.type === "erro"
       ? "text-red-500"
-      : message?.type === "success"
+      : message?.type === "successo"
       ? "text-green-500"
       : "text-yellow-500";
 
   const bg =
-    message?.type === "error"
+    message?.type === "erro"
       ? "bg-red-200"
-      : message?.type === "success"
+      : message?.type === "successo"
       ? "bg-green-200"
       : "bg-yellow-200";
 
   const bg2 =
-    message?.type === "error"
+    message?.type === "erro"
       ? "bg-red-500"
-      : message?.type === "success"
+      : message?.type === "successo"
       ? "bg-green-500"
       : "bg-yellow-500";
 
@@ -38,7 +47,7 @@ const Alert = ({ message, close }: IAlertProps) => {
           animate={"animate"}
           exit={"exit"}
           key={"alert"}
-          className="fixed bottom-8 left-0 right-0 ml-auto mr-auto"
+          className="fixed bottom-8 left-0 right-0 ml-auto mr-auto max-w-xl"
         >
           <div className="flex items-center justify-center px-4 sm:px-0">
             <div
@@ -47,20 +56,15 @@ const Alert = ({ message, close }: IAlertProps) => {
             rounded-md  md:flex justify-between items-center  top-0 mt-12 mb-8 py-4 px-4`}
             >
               <div className="sm:flex items-center">
-                <div className="flex items-end">
+                <div className="flex items-center">
                   <div className={`mr-2 mt-0.5 sm:mt-0 ${text}`}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width={22}
-                      height={22}
-                      fill="currentColor"
-                    >
-                      <path
-                        className="heroicon-ui"
-                        d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 9a1 1 0 0 1-1-1V8a1 1 0 0 1 2 0v4a1 1 0 0 1-1 1zm0 4a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"
-                      />
-                    </svg>
+                    {message.type === "successo" ? (
+                      <CheckCircleIcon className="h-6 w-6 text-green-500" />
+                    ) : message.type === "erro" ? (
+                      <XCircleIcon className="h-6 w-6 text-red-500" />
+                    ) : (
+                      <InformationCircleIcon className="h-6 w-6 text-yellow-500" />
+                    )}
                   </div>
                   <p className={`mr-2 text-base font-bold ${text} capitalize`}>
                     {message?.type}
@@ -72,16 +76,54 @@ const Alert = ({ message, close }: IAlertProps) => {
                 <p className={`text-base ${text}`}>{message?.message}</p>
               </div>
               <div className="flex justify-end mt-4 md:mt-0 md:pl-4 lg:pl-0">
-                <span
-                  className={`text-sm mr-4 font-bold cursor-pointer ${text}`}
+                <div
+                  className={`text-sm mr-4 font-bold relative ${text}`}
+                  onMouseEnter={() => setTooltipStatus(1)}
+                  onMouseLeave={() => setTooltipStatus(0)}
                 >
-                  Details
-                </span>
+                  {tooltipStatus === 1 && (
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        variants={variants}
+                        className="mx-auto container px-4 py-4 bg-sky-400 rounded absolute h-fit -top-32 w-[200px] cursor-default"
+                      >
+                        <div className="flex gap-2">
+                          <p className="text-sm font-semibold leading-none text-white">
+                            Possíveis causas
+                          </p>
+                        </div>
+                        <div className="flex flex-col justify-center gap-2 text-xs leading-none text-gray-50 pt-2 pb-2">
+                          {message.code === 401 && (
+                            <>
+                              <span>Você não permissão para criar eventos</span>
+                              <span>Sua sessão expirou. Faça o logout e o login</span>
+                            </>
+                            )}
+                        </div>
+                        <svg
+                          className="absolute z-10 bottom-[-10px]"
+                          width={16}
+                          height={10}
+                          viewBox="0 0 16 10"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8 10L0 0L16 1.41326e-06L8 10Z"
+                            fill="#38BDF8"
+                          />
+                        </svg>
+                      </motion.div>
+                    </AnimatePresence>
+                  )}
+                  
+                  {message.code === 401 && <span className="cursor-pointer">Detalhes</span>}
+                </div>
                 <span
                   onClick={close}
                   className={`text-sm cursor-pointer ${text}`}
                 >
-                  Close
+                  <XMarkIcon className="h-4 w-4" />
                 </span>
               </div>
             </div>
@@ -89,13 +131,6 @@ const Alert = ({ message, close }: IAlertProps) => {
         </motion.div>
       )}
     </AnimatePresence>
-    // <div className={`absolute bottom-20 left-0 right-0 ml-auto mr-auto h-fit py-3 px-6 flex items-center
-    //   justify-center border rounded w-fit ${colors}`}>
-    //   <span onClick={close} className="absolute right-1 top-0 p-1 cursor-pointer hover:brightness-125">
-    //     x
-    //   </span>
-    //   <p>{message}</p>
-    // </div>
   );
 };
 

@@ -13,8 +13,8 @@ const MyEvents = () => {
 
   return (
     <Layout>
-      <div className="flex h-full w-full flex-col items-center justify-center relative gap-4 px-4">
-        <h1 className="text-2xl text-gray-600 font-medium">My Events</h1>
+      <div className="flex h-full w-full flex-col items-center relative gap-4 px-4">
+        <h1 className="text-3xl text-gray-600 font-medium">Eventos</h1>
         <div className="flex flex-col items-center justify-center">
           {events?.length > 0 &&
             events.map((event: IEvent) => (
