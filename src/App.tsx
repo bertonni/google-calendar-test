@@ -7,6 +7,7 @@ import Policy from "./pages/Policy";
 import AddEvent from "./pages/AddEvent";
 import RequireAuth from "./components/RequireAuth";
 import MyEvents from "./pages/MyEvents";
+import Calendar from "./pages/Calendar";
 
 function App() {
 
@@ -40,6 +41,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/policy" element={<Policy />} />
+      <Route path="/calendar" element={<Calendar />} />
     </Routes>
   );
 }

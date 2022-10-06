@@ -11,6 +11,10 @@ export interface IAuthContext {
   accessToken: string;
 }
 
+export interface IEventCardProps {
+  event: IEvent;
+}
+
 export interface IMessage {
   type: "successo" | "erro";
   message: string;

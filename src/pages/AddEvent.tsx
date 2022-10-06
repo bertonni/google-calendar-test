@@ -25,15 +25,15 @@ import Input from "../components/Input";
 
 const schema = yup
   .object({
-    title: yup.string().required("Title field is required"),
+    title: yup.string().required("O campo título é obrigatório"),
     description: yup.string(),
-    date: yup.string().required("Date field is required"),
+    date: yup.string().required("O campo data é obrigatório"),
     start: yup
       .string()
-      .required("start time cannot be empty")
+      .required("O campo Hora Início é obrigatório")
       .test(
         "is-greater",
-        "Start time must be before end time",
+        "A hora de início deve ser menor ou igual à hora do término",
         function (value) {
           const { end } = this.parent;
           return moment(value, "HH:mm").isSameOrBefore(moment(end, "HH:mm"));
@@ -41,10 +41,10 @@ const schema = yup
       ),
     end: yup
       .string()
-      .required("end time cannot be empty")
+      .required("O campo Hora Fim é obrigatório")
       .test(
         "is-greater",
-        "Start time must be before end time",
+        "",
         function (value) {
           const { start } = this.parent;
           return moment(value, "HH:mm").isSameOrAfter(moment(start, "HH:mm"));
@@ -133,7 +133,8 @@ const AddEvent = () => {
           recurr += `WEEKLY;BYDAY=${days[index]};`;
           break;
         case "monthly":
-          recurr += "MONTHLY;";
+          const weekIndex: number = weekNumber ? weeks.indexOf(weekNumber) : 0;
+          recurr += `MONTHLY;BYDAY=${weekIndex + 1}${days[index]};`;
           break;
         case "yearly":
           recurr += "YEARLY;";
@@ -264,8 +265,8 @@ const AddEvent = () => {
             className="w-full rounded border border-rose-700 bg-rose-200 flex flex-col
             justify-center py-2 px-4 gap-2"
           >
-            <h1 className="text-rose-500 font-medium text-lg">Errors:</h1>
-            <div className="flex flex-col gap-1 justify-center">
+            <h1 className="text-rose-500 font-medium text-lg">Erros:</h1>
+            <div className="flex flex-col justify-center">
               <p className="text-rose-500">{errors.title?.message}</p>
               <p className="text-rose-500">{errors.description?.message}</p>
               <p className="text-rose-500">{errors.date?.message}</p>

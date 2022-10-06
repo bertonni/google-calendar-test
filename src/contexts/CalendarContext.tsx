@@ -53,7 +53,10 @@ const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
 
     axios
       .post(url, data, config)
-      .then((res: AxiosResponse) => setMessage({ type: "successo", message: "Evento criado com sucesso!"}))
+      .then((res: AxiosResponse) => {
+        setMessage({ type: "successo", message: "Evento criado com sucesso!"});
+        listEvents(accessToken);
+      })
       .catch((err: AxiosError) => {
         const message: IMessage = {
           type: "erro",
@@ -82,8 +85,25 @@ const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
 
     axios
       .delete(url, config)
-      .then((res: AxiosResponse) => console.log(res.data))
-      .catch((err: AxiosError) => console.log(err.message));
+      .then((res: AxiosResponse) => {
+        const message: IMessage = {
+          type: "successo",
+          message: "Evento removido com sucesso!"
+        };
+        setMessage(message);
+        const updatedEvents = events.filter((event: IEvent) => event.id !== eventId);
+        setEvents(updatedEvents);
+      })
+      .catch((err: AxiosError) => {
+        const message: IMessage = {
+          code: err.response?.status,
+          type: "erro",
+          message: "Houve um erro ao tentar remover o evento: " + err.message
+        };
+
+        setMessage(message);
+        console.log(err.message)
+      });
   };
 
   const memoedValues = useMemo(
