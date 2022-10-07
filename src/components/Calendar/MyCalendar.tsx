@@ -8,6 +8,10 @@ import ptBrLocale from "@fullcalendar/core/locales/pt-br";
 
 const MyCalendar = () => {
 
+  const handleClick = (val: string) => {
+    console.log(val);
+  }
+
   return (
     <div className="w-full">
       <FullCalendar
@@ -32,7 +36,7 @@ const MyCalendar = () => {
             window.open(info.event.url);
           }
         }}
-        dateClick={(info) => console.log(info.date.toISOString())}
+        dateClick={(info) => handleClick(info.date.toISOString())}
       />
     </div>
   );
