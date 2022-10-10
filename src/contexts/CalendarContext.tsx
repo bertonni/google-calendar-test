@@ -37,7 +37,21 @@ const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
       .then((res: AxiosResponse) => {
         setEvents(res.data.items);
       })
-      .catch((err: AxiosError) => console.log(err.message));
+      .catch((err: AxiosError) => {
+        const message: IMessage = {
+          type: "erro",
+          message:
+            "Houve um erro ao tentar buscar os evento!",
+        };
+        if (err.response?.status === 401) {
+          message.code = 401;
+          setMessage(message);
+        } else {
+          message.message = `Um erro ocorreu: ${err.message}`;
+          setMessage(message);
+        }
+        console.log(err.message)
+      });
   };
 
   const insertEvent = (event: IEvent, accessToken: string) => {

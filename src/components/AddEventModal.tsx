@@ -14,13 +14,15 @@ import moment from "moment";
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
 import { Navigate } from "react-router-dom";
-import {
-  daysInPortuguese,
-  weeks,
-  months,
-  days,
-} from "../assets/data";
+import { daysInPortuguese, weeks, months, days } from "../assets/data";
 import Input from "../components/Input";
+import { AnimatePresence, Variants, motion } from "framer-motion";
+
+const variants: Variants = {
+  initial: { y: -50, opacity: 0 },
+  animate: { y: 0, opacity: 1, transition: { duration: 0.3 } },
+  exit: { y: -50, opacity: 0, transition: { duration: 0.3 } },
+};
 
 const schema = yup
   .object({
@@ -41,20 +43,16 @@ const schema = yup
     end: yup
       .string()
       .required("O campo Hora Fim é obrigatório")
-      .test(
-        "is-greater",
-        "",
-        function (value) {
-          const { start } = this.parent;
-          return moment(value, "HH:mm").isSameOrAfter(moment(start, "HH:mm"));
-        }
-      ),
+      .test("is-greater", "", function (value) {
+        const { start } = this.parent;
+        return moment(value, "HH:mm").isSameOrAfter(moment(start, "HH:mm"));
+      }),
     location: yup.string(),
     recurrence: yup.string(),
   })
   .required();
 
-const AddEventModal = ({ close, date, time } : IAddEventModalProps) => {
+const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
   const {
     register,
     handleSubmit,
@@ -64,9 +62,18 @@ const AddEventModal = ({ close, date, time } : IAddEventModalProps) => {
     resolver: yupResolver(schema),
   });
 
-  const [dayOfWeek, setDayOfWeek] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [weekNumber, setWeekNumber] = useState<string | null>(null);
+  const newDate = new Date(date);
+  const dayWeek = daysInPortuguese[newDate.getUTCDay()];
+  const dayOfMonth = newDate.getUTCDate();
+  const month = newDate.getUTCMonth();
+  const day = newDate.getUTCDay();
+  const weekOfMonth = Math.ceil((dayOfMonth - 1 - day) / 7).toString();
+
+  const [dayOfWeek, setDayOfWeek] = useState<string>(dayWeek);
+  const [selectedDate, setSelectedDate] = useState<string | null>(
+    `${dayOfMonth} de ${months[month]}`
+  );
+  const [weekNumber, setWeekNumber] = useState<string | null>(weekOfMonth);
   const [loading, setLoading] = useState<boolean>(false);
   const [showMore, setShowMore] = useState<boolean>(false);
 
@@ -74,7 +81,8 @@ const AddEventModal = ({ close, date, time } : IAddEventModalProps) => {
 
   if (!loggedUser) return <Navigate to={"/login"} />;
 
-  const { insertEvent, message, setMessage } = useCalendarContext() as ICalendarContext;
+  const { insertEvent, message, setMessage } =
+    useCalendarContext() as ICalendarContext;
 
   useEffect(() => {
     if (message?.type === "successo") reset();
@@ -173,126 +181,148 @@ const AddEventModal = ({ close, date, time } : IAddEventModalProps) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20" onClick={close}>
-      <div className="flex flex-col gap-6 items-center px-10 py-4 relative rounded bg-white z-50" onClick={(e) => e.stopPropagation()}>
-        <h1 className="text-3xl text-gray-600 font-medium">Criar Evento</h1>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-          <Input
-            id="summary"
-            name="title"
-            label="Título"
-            placeholder="title"
-            refs={register}
-          />
-          {showMore &&
-            <Input
-              id="description"
-              name="description"
-              label="Descrição"
-              placeholder="description"
-              refs={register}
-            />
-          }
-          <div className="flex items-center justify-center w-full gap-2">
-            <Input
-              id="date"
-              name="date"
-              label="Data"
-              placeholder="date"
-              handleChange={handleDateChange}
-              type="date"
-              refs={register}
-              value={date}
-              fullWidth
-            />
-            <Input
-              id="start"
-              name="start"
-              label="Hora Início"
-              placeholder="start"
-              type="time"
-              value={time}
-              refs={register}
-            />
-            <Input
-              id="end"
-              name="end"
-              label="Hora Fim"
-              placeholder="end"
-              type="time"
-              refs={register}
-            />
-          </div>
-          {showMore && 
-            <Input
-              id="location"
-              name="location"
-              label="Localização"
-              placeholder="location"
-              refs={register}
-            />
-          }
-          <div className="flex flex-col gap-1 py-2 group">
-            <label htmlFor="recurrence" className="font-medium text-gray-600 group-focus-within:text-sky-600">
-              Recorrência
-            </label>
-            <select
-              id="recurrence"
-              className="input group-focus:outline outline-sky-600"
-              autoComplete="off"
-              placeholder="recurrence"
-              {...register("recurrence")}
-            >
-              <option value="no">Não se repete</option>
-              <option value="daily">Todos os dias</option>
-              <option value="weekly">Semanal: cada {dayOfWeek}</option>
-              <option value="monthly">
-                Mensal: no(a) {weekNumber} {dayOfWeek}
-              </option>
-              <option value="yearly">Anual em {selectedDate}</option>
-              <option value="every-day">
-                Todos os dias da semana (segunda a sexta-feira)
-              </option>
-            </select>
-          </div>
-          <div className="flex items-center justify-end -mt-1">
-            <span className="text-sky-500 cursor-pointer hover:text-sky-600" onClick={() => setShowMore(!showMore)}>Mostrar {showMore ? "menos" : "mais"}</span>
-          </div>
-          <div className="flex items-center justify-center mt-2">
-            <button
-              className="input px-4 bg-emerald-400 border-emerald-600 text-white w-32
-                cursor-pointer hover:brightness-110"
-              type="submit"
-            >
-              {loading ? "Loading..." : "Enviar"}
-            </button>
-          </div>
-        </form>
-        {Object.keys(errors).length > 0 && (
-          <div
-            className="w-full rounded border border-rose-700 bg-rose-200 flex flex-col
-            justify-center py-2 px-4 gap-2"
+    <AnimatePresence mode="wait">
+      {show && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20"
+          onClick={close}
+        >
+          <motion.div
+            variants={variants}
+            initial={"initial"}
+            animate={"animate"}
+            exit={"exit"}
+            className="flex flex-col gap-6 items-center px-10 py-4 relative rounded bg-white z-50"
+            onClick={(e) => e.stopPropagation()}
           >
-            <h1 className="text-rose-500 font-medium text-lg">Erros:</h1>
-            <div className="flex flex-col justify-center">
-              <p className="text-rose-500">{errors.title?.message}</p>
-              <p className="text-rose-500">{errors.description?.message}</p>
-              <p className="text-rose-500">{errors.date?.message}</p>
-              <p className="text-rose-500">{errors.start?.message}</p>
-              <p className="text-rose-500">{errors.end?.message}</p>
-              <p className="text-rose-500">{errors.recurrence?.message}</p>
-            </div>
-          </div>
-        )}
-        <Alert
-          close={() => {
-            setMessage(null);
-          }}
-          message={message}
-        />
-      </div>
-    </div>
+            <h1 className="text-3xl text-gray-600 font-medium">Criar Evento</h1>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+              <Input
+                id="summary"
+                name="title"
+                label="Título"
+                placeholder="Título"
+                refs={register}
+              />
+              {showMore && (
+                <Input
+                  id="description"
+                  name="description"
+                  label="Descrição"
+                  placeholder="Descrição"
+                  refs={register}
+                />
+              )}
+              <div className="flex items-center justify-center w-full gap-2">
+                <Input
+                  id="date"
+                  name="date"
+                  label="Data"
+                  placeholder="Data"
+                  handleChange={handleDateChange}
+                  type="date"
+                  refs={register}
+                  value={date}
+                  fullWidth
+                />
+                <Input
+                  id="start"
+                  name="start"
+                  label="Hora Início"
+                  placeholder="start"
+                  type="time"
+                  value={time}
+                  refs={register}
+                />
+                <Input
+                  id="end"
+                  name="end"
+                  label="Hora Fim"
+                  placeholder="end"
+                  type="time"
+                  refs={register}
+                />
+              </div>
+              {showMore && (
+                <Input
+                  id="location"
+                  name="location"
+                  label="Localização"
+                  placeholder="location"
+                  refs={register}
+                />
+              )}
+              <div className="flex flex-col gap-1 py-2 group">
+                <label
+                  htmlFor="recurrence"
+                  className="font-medium text-gray-600 group-focus-within:text-sky-600"
+                >
+                  Recorrência
+                </label>
+                <select
+                  id="recurrence"
+                  className="input group-focus:outline outline-sky-600"
+                  autoComplete="off"
+                  placeholder="recurrence"
+                  {...register("recurrence")}
+                >
+                  <option value="no">Não se repete</option>
+                  <option value="daily">Todos os dias</option>
+                  <option value="weekly">Semanal: cada {dayOfWeek}</option>
+                  <option value="monthly">
+                    Mensal: no(a) {weekNumber} {dayOfWeek}
+                  </option>
+                  <option value="yearly">Anual em {selectedDate}</option>
+                  <option value="every-day">
+                    Todos os dias da semana (segunda a sexta-feira)
+                  </option>
+                </select>
+              </div>
+              <div className="flex items-center justify-end -mt-1">
+                <span
+                  className="text-sky-500 cursor-pointer hover:text-sky-600"
+                  onClick={() => setShowMore(!showMore)}
+                >
+                  Mostrar {showMore ? "menos" : "mais"}
+                </span>
+              </div>
+              <div className="flex items-center justify-center mt-2">
+                <button
+                  className="input px-4 bg-emerald-400 border-emerald-600 text-white w-32
+                cursor-pointer hover:brightness-110"
+                  type="submit"
+                >
+                  {loading ? "Loading..." : "Enviar"}
+                </button>
+              </div>
+            </form>
+            {Object.keys(errors).length > 0 && (
+              <div
+                className="w-full rounded border border-rose-700 bg-rose-200 flex flex-col
+            justify-center py-2 px-4 gap-2"
+              >
+                <h1 className="text-rose-500 font-medium text-lg">Erros:</h1>
+                <div className="flex flex-col justify-center">
+                  <p className="text-rose-500">{errors.title?.message}</p>
+                  <p className="text-rose-500">{errors.description?.message}</p>
+                  <p className="text-rose-500">{errors.date?.message}</p>
+                  <p className="text-rose-500">{errors.start?.message}</p>
+                  <p className="text-rose-500">{errors.end?.message}</p>
+                  <p className="text-rose-500">{errors.recurrence?.message}</p>
+                </div>
+              </div>
+            )}
+            <Alert
+              close={() => {
+                setMessage(null);
+              }}
+              message={message}
+            />
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };
 

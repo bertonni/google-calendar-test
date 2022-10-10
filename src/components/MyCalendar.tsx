@@ -32,6 +32,7 @@ const MyCalendar = () => {
       <FullCalendar
         selectable={true}
         timeZone={"UTC"}
+        dayMaxEventRows={3}
         headerToolbar={{
           left: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
           center: "title",
@@ -57,17 +58,16 @@ const MyCalendar = () => {
           }
         }}
         dateClick={(info) => {
-          console.log(info.view.calendar.getEvents());
           handleClick(info.date.toISOString());
         }}
       />
-      {showModal && (
-        <AddEventModal
-          close={() => setShowModal(false)}
-          date={selectedDate}
-          time={selectedTime}
-        />
-      )}
+      <AddEventModal
+        show={showModal}
+        close={() => setShowModal(false)}
+        date={selectedDate}
+        time={selectedTime}
+      />
+      <span className="text-gray-600">Clique em qualquer data para criar um evento</span>
     </div>
   );
 };

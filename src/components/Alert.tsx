@@ -70,9 +70,9 @@ const Alert = ({ message, close }: IAlertProps) => {
                     {message?.type}
                   </p>
                 </div>
-                <div
+                {/* <div
                   className={`h-1 w-1 ${bg2} rounded-full mr-2 hidden xl:block`}
-                />
+                /> */}
                 <p className={`text-base ${text}`}>{message?.message}</p>
               </div>
               <div className="flex justify-end mt-4 md:mt-0 md:pl-4 lg:pl-0">

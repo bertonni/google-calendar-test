@@ -22,6 +22,7 @@ export interface IMessage {
 }
 
 export interface IAddEventModalProps {
+  show: boolean;
   close: () => void;
   date: string;
   time: string;
