@@ -1,8 +1,8 @@
-import Layout from "../components/Layout";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import {
+  IAddEventModalProps,
   IAuthContext,
   ICalendarContext,
   IEvent,
@@ -54,7 +54,7 @@ const schema = yup
   })
   .required();
 
-const AddEvent = () => {
+const AddEventModal = ({ close, date, time } : IAddEventModalProps) => {
   const {
     register,
     handleSubmit,
@@ -68,6 +68,7 @@ const AddEvent = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [weekNumber, setWeekNumber] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showMore, setShowMore] = useState<boolean>(false);
 
   const { loggedUser, accessToken } = useAuthContext() as IAuthContext;
 
@@ -172,8 +173,8 @@ const AddEvent = () => {
   };
 
   return (
-    <Layout>
-      <div className="h-full flex flex-col gap-6 items-center px-40 relative">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20" onClick={close}>
+      <div className="flex flex-col gap-6 items-center px-10 py-4 relative rounded bg-white z-50" onClick={(e) => e.stopPropagation()}>
         <h1 className="text-3xl text-gray-600 font-medium">Criar Evento</h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="w-full">
@@ -184,13 +185,15 @@ const AddEvent = () => {
             placeholder="title"
             refs={register}
           />
-          <Input
-            id="description"
-            name="description"
-            label="Descrição"
-            placeholder="description"
-            refs={register}
-          />
+          {showMore &&
+            <Input
+              id="description"
+              name="description"
+              label="Descrição"
+              placeholder="description"
+              refs={register}
+            />
+          }
           <div className="flex items-center justify-center w-full gap-2">
             <Input
               id="date"
@@ -200,6 +203,7 @@ const AddEvent = () => {
               handleChange={handleDateChange}
               type="date"
               refs={register}
+              value={date}
               fullWidth
             />
             <Input
@@ -208,6 +212,7 @@ const AddEvent = () => {
               label="Hora Início"
               placeholder="start"
               type="time"
+              value={time}
               refs={register}
             />
             <Input
@@ -219,13 +224,15 @@ const AddEvent = () => {
               refs={register}
             />
           </div>
-          <Input
-            id="location"
-            name="location"
-            label="Localização"
-            placeholder="location"
-            refs={register}
-          />
+          {showMore && 
+            <Input
+              id="location"
+              name="location"
+              label="Localização"
+              placeholder="location"
+              refs={register}
+            />
+          }
           <div className="flex flex-col gap-1 py-2 group">
             <label htmlFor="recurrence" className="font-medium text-gray-600 group-focus-within:text-sky-600">
               Recorrência
@@ -248,6 +255,9 @@ const AddEvent = () => {
                 Todos os dias da semana (segunda a sexta-feira)
               </option>
             </select>
+          </div>
+          <div className="flex items-center justify-end -mt-1">
+            <span className="text-sky-500 cursor-pointer hover:text-sky-600" onClick={() => setShowMore(!showMore)}>Mostrar {showMore ? "menos" : "mais"}</span>
           </div>
           <div className="flex items-center justify-center mt-2">
             <button
@@ -275,15 +285,15 @@ const AddEvent = () => {
             </div>
           </div>
         )}
+        <Alert
+          close={() => {
+            setMessage(null);
+          }}
+          message={message}
+        />
       </div>
-      <Alert
-        close={() => {
-          setMessage(null);
-        }}
-        message={message}
-      />
-    </Layout>
+    </div>
   );
 };
 
-export default AddEvent;
+export default AddEventModal;

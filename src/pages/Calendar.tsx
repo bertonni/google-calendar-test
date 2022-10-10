@@ -1,5 +1,4 @@
-import React from 'react'
-import MyCalendar from '../components/Calendar/MyCalendar';
+import MyCalendar from '../components/MyCalendar';
 import Layout from '../components/Layout';
 
 const Calendar = () => {

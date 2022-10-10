@@ -31,6 +31,14 @@ function App() {
         }
       />
       <Route
+        path="/calendar"
+        element={
+          <RequireAuth>
+            <Calendar />
+          </RequireAuth>
+        }
+      />
+      <Route
         path="/logout"
         element={
           <RequireAuth>
@@ -41,7 +49,6 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/policy" element={<Policy />} />
-      <Route path="/calendar" element={<Calendar />} />
     </Routes>
   );
 }

@@ -10,6 +10,7 @@ const Input = ({
   refs,
   min,
   max,
+  value = "",
   fullWidth,
   handleChange = () => null,
   type = "text",
@@ -25,7 +26,10 @@ const Input = ({
         autoComplete={autocomplete ? "on" : "off"}
         placeholder={placeholder}
         {...refs(name)}
+        min={min}
+        max={max}
         type={type}
+        defaultValue={value}
         onChange={(val) => handleChange(val.target.value)}
       />
     </div>

@@ -21,6 +21,12 @@ export interface IMessage {
   code?: number;
 }
 
+export interface IAddEventModalProps {
+  close: () => void;
+  date: string;
+  time: string;
+}
+
 export interface ILoggedUser {
   uid: string;
   name: string;
@@ -48,6 +54,7 @@ export interface IInputProps {
   type?: string;
   min?: string;
   max?: string;
+  value?: string;
   fullWidth?: boolean;
   handleChange?: (val: string) => void;
 };
