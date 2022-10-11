@@ -17,6 +17,7 @@ import { Navigate } from "react-router-dom";
 import { daysInPortuguese, weeks, months, days } from "../assets/data";
 import Input from "../components/Input";
 import { AnimatePresence, Variants, motion } from "framer-motion";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 const variants: Variants = {
   initial: { y: -50, opacity: 0 },
@@ -91,6 +92,11 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
   const formatDateTime = (date: string, hour: string) => {
     return `${date}T${hour}:00`;
   };
+
+  const clearForm = () => {
+    reset();
+    close();
+  }
 
   const handleDateChange = (value: string) => {
     if (value.length === 0) {
@@ -195,8 +201,12 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
             className="flex flex-col gap-6 items-center px-10 py-4 relative rounded bg-white z-50"
             onClick={(e) => e.stopPropagation()}
           >
+            <XMarkIcon
+              className="h-10 w-10 p-1 absolute right-1 top-1 cursor-pointer text-gray-600
+              hover:text-gray-800"
+              onClick={close}
+            />
             <h1 className="text-3xl text-gray-600 font-medium">Criar Evento</h1>
-
             <form onSubmit={handleSubmit(onSubmit)} className="w-full">
               <Input
                 id="summary"
@@ -287,7 +297,15 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
                   Mostrar {showMore ? "menos" : "mais"}
                 </span>
               </div>
-              <div className="flex items-center justify-center mt-2">
+              <div className="flex items-center justify-end mt-2 gap-2">
+                <button
+                  className="input px-4 bg-rose-400 border-rose-600 text-white w-32
+                    cursor-pointer hover:brightness-110"
+                  onClick={clearForm}
+                  type="button"
+                >
+                  Fechar
+                </button>
                 <button
                   className="input px-4 bg-emerald-400 border-emerald-600 text-white w-32
                 cursor-pointer hover:brightness-110"
