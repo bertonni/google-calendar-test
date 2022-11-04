@@ -70,10 +70,7 @@ const Alert = ({ message, close }: IAlertProps) => {
                     {message?.type}
                   </p>
                 </div>
-                {/* <div
-                  className={`h-1 w-1 ${bg2} rounded-full mr-2 hidden xl:block`}
-                /> */}
-                <p className={`text-base ${text}`}>{message?.message}</p>
+                <p className={`text-base ${text}`}>{message?.text}</p>
               </div>
               <div className="flex justify-end mt-4 md:mt-0 md:pl-4 lg:pl-0">
                 <div
@@ -119,12 +116,12 @@ const Alert = ({ message, close }: IAlertProps) => {
                   
                   {message.code === 401 && <span className="cursor-pointer">Detalhes</span>}
                 </div>
-                <span
+                {/* <span
                   onClick={close}
                   className={`text-sm cursor-pointer ${text}`}
                 >
                   <XMarkIcon className="h-4 w-4" />
-                </span>
+                </span> */}
               </div>
             </div>
           </div>

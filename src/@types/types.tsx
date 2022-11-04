@@ -1,4 +1,5 @@
 import { User } from "firebase/auth";
+import { ReactNode } from "react";
 
 export interface IAuthContext {
   loggedUser: User | null;
@@ -17,7 +18,7 @@ export interface IEventCardProps {
 
 export interface IMessage {
   type: "successo" | "erro";
-  message: string;
+  text: string;
   code?: number;
 }
 
@@ -26,6 +27,7 @@ export interface IAddEventModalProps {
   close: () => void;
   date: string;
   time: string;
+  children?: ReactNode;
 }
 
 export interface ILoggedUser {
@@ -35,10 +37,14 @@ export interface ILoggedUser {
   accessToken: string;
 }
 
-export type ICalendarContext = {
+export type CalendarContextType = {
   events: IEvent[] | [];
   message: IMessage | null;
   urlBase: string;
+  eventColor: string;
+  currentCalendar: number;
+  currentCalendarId: string;
+  setCurrentCalendar: (value: number) => void;
   setMessage: (value: IMessage | null) => void;
   listEvents: (accessToken: string) => void;
   insertEvent: (event: IEvent, accessToken: string) => void;
@@ -219,5 +225,5 @@ export interface IFormInputs {
 
 export interface IAlertProps {
   message: IMessage | null;
-  close: () => void;
+  close?: () => void;
 }

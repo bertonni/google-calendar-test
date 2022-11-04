@@ -10,8 +10,8 @@ const Navbar = () => {
     <div className="py-4 flex items-center flex-wrap justify-center gap-4 z-10 w-full">
       <Link className='font-medium text-gray-600' to={"/"}>Home</Link>
       {loggedUser && <Link className='font-medium text-gray-600' to={"/calendar"}>Calendário</Link>}
-      {loggedUser && <Link className='font-medium text-gray-600' to={"/add"}>Adicionar Evento</Link>}
-      {loggedUser && <Link className='font-medium text-gray-600' to={"/events"}>Eventos</Link>}
+      {/* {loggedUser && <Link className='font-medium text-gray-600' to={"/add"}>Adicionar Evento</Link>} */}
+      {/* {loggedUser && <Link className='font-medium text-gray-600' to={"/events"}>Eventos</Link>} */}
       <Link className='font-medium text-gray-600' to={"/terms"}>Termos</Link>
       <Link className='font-medium text-gray-600' to={"/policy"}>Política de Uso</Link>
       {loggedUser && (

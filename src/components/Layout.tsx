@@ -2,7 +2,8 @@ import { FC, PropsWithChildren } from 'react'
 import Footer from './Footer'
 import Navbar from './Navbar'
 
-const Layout: FC<PropsWithChildren> = ({children}) => {
+const Layout: FC<PropsWithChildren> = ({children}) => {  
+
   return (
     <div className="h-screen w-ful relative flex flex-col">
       <Navbar />

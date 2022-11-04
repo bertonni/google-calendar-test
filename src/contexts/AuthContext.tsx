@@ -60,7 +60,6 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
         }
         // The signed-in user info.
         const user = result.user;
-        console.log(user, token);
         setLoggedUser(user);
         navigate("/add");
       })

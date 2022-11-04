@@ -4,11 +4,10 @@ import * as yup from "yup";
 import {
   IAddEventModalProps,
   IAuthContext,
-  ICalendarContext,
+  CalendarContextType,
   IEvent,
   IFormInputs,
 } from "../@types/types";
-import Alert from "../components/Alert";
 import { useCalendarContext } from "../contexts/CalendarContext";
 import moment from "moment";
 import { useEffect, useState } from "react";
@@ -20,9 +19,8 @@ import { AnimatePresence, Variants, motion } from "framer-motion";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 const variants: Variants = {
-  initial: { y: -50, opacity: 0 },
-  animate: { y: 0, opacity: 1, transition: { duration: 0.3 } },
-  exit: { y: -50, opacity: 0, transition: { duration: 0.3 } },
+  initial: { scale: 0, opacity: 0, transition: { duration: 0.3 } },
+  animate: { scale: 1, opacity: 1, transition: { duration: 0.3 } },
 };
 
 const schema = yup
@@ -53,7 +51,13 @@ const schema = yup
   })
   .required();
 
-const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
+const AddEventModal = ({
+  show,
+  close,
+  date,
+  time,
+  children,
+}: IAddEventModalProps) => {
   const {
     register,
     handleSubmit,
@@ -63,27 +67,30 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
     resolver: yupResolver(schema),
   });
 
-  const newDate = new Date(date);
-  const dayWeek = daysInPortuguese[newDate.getUTCDay()];
-  const dayOfMonth = newDate.getUTCDate();
-  const month = newDate.getUTCMonth();
-  const day = newDate.getUTCDay();
-  const weekOfMonth = Math.ceil((dayOfMonth - 1 - day) / 7).toString();
-
-  const [dayOfWeek, setDayOfWeek] = useState<string>(dayWeek);
-  const [selectedDate, setSelectedDate] = useState<string | null>(
-    `${dayOfMonth} de ${months[month]}`
-  );
-  const [weekNumber, setWeekNumber] = useState<string | null>(weekOfMonth);
+  const [dayOfWeek, setDayOfWeek] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [weekNumber, setWeekNumber] = useState<string | null>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showMore, setShowMore] = useState<boolean>(false);
 
   const { loggedUser, accessToken } = useAuthContext() as IAuthContext;
 
+  useEffect(() => {
+    const newDate = new Date(date);
+    const dayWeek = daysInPortuguese[newDate.getUTCDay()];
+    const dayOfMonth = newDate.getUTCDate();
+    const month = newDate.getUTCMonth();
+    const day = newDate.getUTCDay();
+    const weekOfMonth = Math.ceil((dayOfMonth - 1 - day) / 7).toString();
+    setSelectedDate(`${dayOfMonth} de ${months[month]}`);
+    setDayOfWeek(dayWeek);
+    setWeekNumber(weekOfMonth);
+  }, [date, time]);
+
   if (!loggedUser) return <Navigate to={"/login"} />;
 
   const { insertEvent, message, setMessage } =
-    useCalendarContext() as ICalendarContext;
+    useCalendarContext() as CalendarContextType;
 
   useEffect(() => {
     if (message?.type === "successo") reset();
@@ -96,7 +103,7 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
   const clearForm = () => {
     reset();
     close();
-  }
+  };
 
   const handleDateChange = (value: string) => {
     if (value.length === 0) {
@@ -183,22 +190,23 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
     if (data.recurrence !== "no") event["recurrence"] = [recurr];
 
     insertEvent(event, accessToken);
+    close();
     setLoading(false);
   };
 
   return (
     <AnimatePresence mode="wait">
-      {show && (
+      {show ? (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20"
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-20"
           onClick={close}
         >
           <motion.div
             variants={variants}
             initial={"initial"}
             animate={"animate"}
-            exit={"exit"}
-            className="flex flex-col gap-6 items-center px-10 py-4 relative rounded bg-white z-50"
+            exit={"initial"}
+            className="flex flex-col gap-6 items-center mt-20 h-fit px-10 py-4 relative rounded bg-white z-50"
             onClick={(e) => e.stopPropagation()}
           >
             <XMarkIcon
@@ -211,7 +219,7 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
               <Input
                 id="summary"
                 name="title"
-                label="Título"
+                label="Título*"
                 placeholder="Título"
                 refs={register}
               />
@@ -228,7 +236,7 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
                 <Input
                   id="date"
                   name="date"
-                  label="Data"
+                  label="Data*"
                   placeholder="Data"
                   handleChange={handleDateChange}
                   type="date"
@@ -239,7 +247,7 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
                 <Input
                   id="start"
                   name="start"
-                  label="Hora Início"
+                  label="Hora Início*"
                   placeholder="start"
                   type="time"
                   value={time}
@@ -248,7 +256,7 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
                 <Input
                   id="end"
                   name="end"
-                  label="Hora Fim"
+                  label="Hora Fim*"
                   placeholder="end"
                   type="time"
                   refs={register}
@@ -259,7 +267,7 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
                   id="location"
                   name="location"
                   label="Localização"
-                  placeholder="location"
+                  placeholder="Localização"
                   refs={register}
                 />
               )}
@@ -331,15 +339,9 @@ const AddEventModal = ({ show, close, date, time }: IAddEventModalProps) => {
                 </div>
               </div>
             )}
-            <Alert
-              close={() => {
-                setMessage(null);
-              }}
-              message={message}
-            />
           </motion.div>
         </div>
-      )}
+      ) : null}
     </AnimatePresence>
   );
 };
