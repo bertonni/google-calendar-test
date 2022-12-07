@@ -52,7 +52,6 @@ const FullCalendarComponent = ({
         right: "today,prevYear,prev,next,nextYear",
       }}
       eventColor={eventColor}
-      // eventBackgroundColor={eventColor}
       plugins={[
         dayGridPlugin,
         timeGridPlugin,

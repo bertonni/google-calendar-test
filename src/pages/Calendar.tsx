@@ -27,7 +27,8 @@ const Calendar = () => {
 
   return (
     <Layout>
-      <div className="w-full flex flex-col items-center gap-2 px-20 justify-center">
+      <div className="w-full flex flex-col items-center gap-2 px-20 2xl:px-40
+        justify-center">
         <h1 className="text-4xl text-gray-600 font-medium">Agenda {lab}</h1>
         <MyCalendar />
       </div>

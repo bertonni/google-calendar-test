@@ -8,7 +8,7 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
     <div className="h-screen w-ful relative flex flex-col">
       {/* <Navbar /> */}
       {loggedUser ? (
-        <div className="flex items-center absolute top-2 right-20 rounded">
+        <div className="flex items-center absolute top-2 right-20 2xl:right-40 rounded">
           <div className="border border-r-0 px-4 py-2 rounded-l">
             <span className="font-medium">{loggedUser?.email}</span>
           </div>
@@ -21,7 +21,7 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
           </div>
         </div>
       ) : (
-        <div className="flex items-center absolute top-2 right-20 rounded">
+        <div className="flex items-center absolute top-2 right-20 2xl:right-40 rounded">
           <button
             className="rounded px-4 py-1 bg-[#4285F4] text-white hover:brightness-110 font-medium"
             onClick={signin}
