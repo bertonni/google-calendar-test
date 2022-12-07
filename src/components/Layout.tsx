@@ -23,7 +23,7 @@ const Layout: FC<PropsWithChildren> = ({ children }) => {
       ) : (
         <div className="flex items-center absolute top-2 right-20 2xl:right-40 rounded">
           <button
-            className="rounded px-4 py-1 bg-[#4285F4] text-white hover:brightness-110 font-medium"
+            className="rounded px-4 py-2 bg-[#4285F4] text-white hover:brightness-110 font-medium"
             onClick={signin}
           >
             Login com Google
