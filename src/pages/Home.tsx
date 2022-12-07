@@ -1,4 +1,3 @@
-import api from "../assets/api";
 import Layout from "../components/Layout";
 
 const Home = () => {

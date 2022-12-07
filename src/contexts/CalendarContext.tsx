@@ -13,7 +13,7 @@ import { CalendarContextType, IEvent, IMessage } from "../@types/types";
 const CalendarContext = createContext<CalendarContextType | null>(null);
 
 export const useCalendarContext = () => {
-  return useContext(CalendarContext);
+  return useContext(CalendarContext) as CalendarContextType;;
 };
 
 const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {

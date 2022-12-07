@@ -1,12 +1,12 @@
 import { EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { IAuthContext, ICalendarContext, IEventCardProps } from "../@types/types";
+import { IEventCardProps } from "../@types/types";
 import { useAuthContext } from "../contexts/AuthContext";
 import { useCalendarContext } from "../contexts/CalendarContext";
 
 const EventCard = ({event}: IEventCardProps) => {
 
-  const { deleteEvent } = useCalendarContext() as ICalendarContext;
-  const { accessToken } = useAuthContext() as IAuthContext;
+  const { deleteEvent } = useCalendarContext();
+  const { accessToken } = useAuthContext();
 
   const getDate = (dateTime: string) => {
     const date = dateTime.split("T")[0].split('-');

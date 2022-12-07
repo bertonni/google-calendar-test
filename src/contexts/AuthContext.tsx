@@ -21,7 +21,7 @@ import { auth, provider } from "../utils/firebase";
 const AuthContext = createContext<IAuthContext | null>(null);
 
 export const useAuthContext = () => {
-  return useContext(AuthContext);
+  return useContext(AuthContext) as IAuthContext;
 };
 
 const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
@@ -61,7 +61,7 @@ const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
         // The signed-in user info.
         const user = result.user;
         setLoggedUser(user);
-        navigate("/add");
+        navigate("/");
       })
       .catch((error) => {
         // Handle Errors here.

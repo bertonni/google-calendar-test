@@ -4,7 +4,6 @@ import {
   CheckCircleIcon,
   InformationCircleIcon,
   XCircleIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
@@ -92,7 +91,7 @@ const Alert = ({ message, close }: IAlertProps) => {
                         <div className="flex flex-col justify-center gap-2 text-xs leading-none text-gray-50 pt-2 pb-2">
                           {message.code === 401 && (
                             <>
-                              <span>Você não permissão para criar eventos</span>
+                              <span>Você não tem permissão para criar eventos</span>
                               <span>Sua sessão expirou. Faça o logout e o login</span>
                             </>
                             )}
@@ -116,12 +115,6 @@ const Alert = ({ message, close }: IAlertProps) => {
                   
                   {message.code === 401 && <span className="cursor-pointer">Detalhes</span>}
                 </div>
-                {/* <span
-                  onClick={close}
-                  className={`text-sm cursor-pointer ${text}`}
-                >
-                  <XMarkIcon className="h-4 w-4" />
-                </span> */}
               </div>
             </div>
           </div>

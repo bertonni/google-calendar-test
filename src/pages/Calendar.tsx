@@ -1,11 +1,10 @@
 import MyCalendar from '../components/MyCalendar';
 import Layout from '../components/Layout';
 import { useCalendarContext } from '../contexts/CalendarContext';
-import { CalendarContextType } from '../@types/types';
 
 const Calendar = () => {
 
-  const { currentCalendar } = useCalendarContext() as CalendarContextType;
+  const { currentCalendar } = useCalendarContext();
 
   let lab = '';
 

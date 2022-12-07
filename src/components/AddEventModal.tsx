@@ -19,7 +19,7 @@ import { AnimatePresence, Variants, motion } from "framer-motion";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 const variants: Variants = {
-  initial: { scale: 0, opacity: 0, transition: { duration: 0.3 } },
+  initial: { scale: 0, opacity: 0, transition: { duration: 0.2 } },
   animate: { scale: 1, opacity: 1, transition: { duration: 0.3 } },
 };
 
@@ -73,7 +73,7 @@ const AddEventModal = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [showMore, setShowMore] = useState<boolean>(false);
 
-  const { loggedUser, accessToken } = useAuthContext() as IAuthContext;
+  const { loggedUser, accessToken } = useAuthContext();
 
   useEffect(() => {
     const newDate = new Date(date);
@@ -87,7 +87,7 @@ const AddEventModal = ({
     setWeekNumber(weekOfMonth);
   }, [date, time]);
 
-  if (!loggedUser) return <Navigate to={"/login"} />;
+  // if (!loggedUser) return <Navigate to={"/login"} />;
 
   const { insertEvent, message, setMessage } =
     useCalendarContext() as CalendarContextType;

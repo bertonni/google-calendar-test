@@ -1,4 +1,4 @@
-import { IAuthContext, ICalendarContext, IEvent } from "../@types/types";
+import { IAuthContext, IEvent } from "../@types/types";
 import Alert from "../components/Alert";
 import EventCard from "../components/EventCard";
 import Layout from "../components/Layout";
@@ -7,7 +7,7 @@ import { useCalendarContext } from "../contexts/CalendarContext";
 
 const MyEvents = () => {
   const { accessToken } = useAuthContext() as IAuthContext;
-  const { events, listEvents, message, setMessage } = useCalendarContext() as ICalendarContext;
+  const { events, listEvents, message, setMessage } = useCalendarContext();
 
   const getEvents = () => {
     listEvents(accessToken);

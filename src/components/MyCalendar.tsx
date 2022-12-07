@@ -1,19 +1,18 @@
-import { memo, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AddEventModal from "./AddEventModal";
 import { useCalendarContext } from "../contexts/CalendarContext";
-import { CalendarContextType } from "../@types/types";
 import FullCalendarComponent from "./FullCalendarComponent";
 import Alert from "./Alert";
+import { useAuthContext } from "../contexts/AuthContext";
 
 const MyCalendar = () => {
   const { eventColor, setCurrentCalendar, message, setMessage } =
-    useCalendarContext() as CalendarContextType;
-
+    useCalendarContext();
+  const { loggedUser, signin } = useAuthContext();
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
 
-  
   useEffect(() => {
     setTimeout(() => {
       setMessage(null);
@@ -31,7 +30,6 @@ const MyCalendar = () => {
     []
   );
 
-
   return (
     <div className="w-full">
       <AddEventModal
@@ -43,9 +41,17 @@ const MyCalendar = () => {
       {message ? <Alert message={message} /> : null}
       {CalendarMemo}
       <div className="flex items-center justify-between mt-2">
-        <span className="text-gray-600">
-          Clique em qualquer data para criar um evento
-        </span>
+        {loggedUser ? (
+          <span className="text-gray-600">
+            Clique em qualquer data para criar um evento
+          </span>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">
+              Faça o login para fazer um agendamento
+            </span>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <button
             className={`rounded px-4 py-1 bg-[#EF6C00] ${

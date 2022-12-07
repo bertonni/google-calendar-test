@@ -3,8 +3,6 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import {
-  IAuthContext,
-  ICalendarContext,
   IEvent,
   IFormInputs,
 } from "../@types/types";
@@ -69,11 +67,11 @@ const AddEvent = () => {
   const [weekNumber, setWeekNumber] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const { loggedUser, accessToken } = useAuthContext() as IAuthContext;
+  const { loggedUser, accessToken } = useAuthContext();
 
   if (!loggedUser) return <Navigate to={"/login"} />;
 
-  const { insertEvent, message, setMessage } = useCalendarContext() as ICalendarContext;
+  const { insertEvent, message, setMessage } = useCalendarContext();
 
   useEffect(() => {
     if (message?.type === "successo") reset();
