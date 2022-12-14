@@ -5,7 +5,7 @@ import { useAuthContext } from "../contexts/AuthContext";
 const RequireAuth: FC<PropsWithChildren> = ({ children }) => {
   const { loggedUser } = useAuthContext();
 
-  return <>{loggedUser ? <>{children}</> : <Navigate to={"/login"} />}</>;
+  return <>{loggedUser ? <>{children}</> : <Navigate to={"/"} />}</>;
 };
 
 export default RequireAuth;

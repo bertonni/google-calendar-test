@@ -64,6 +64,7 @@ const CalendarProvider: FC<PropsWithChildren> = ({ children }) => {
     axios
       .get(url, config)
       .then((res: AxiosResponse) => {
+        console.log(res.data.items);
         setEvents(res.data.items);
       })
       .catch((err: AxiosError) => {

@@ -1,13 +1,18 @@
 import { Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
 import Calendar from "./pages/Calendar";
+import RequireAuth from "./components/RequireAuth";
+import MyEvents from "./pages/MyEvents";
+import NotFound from "./pages/NotFound";
 
 function App() {
 
   return (
     <Routes>
       <Route path="/" element={<Calendar />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/my-events" element={<RequireAuth>
+        <MyEvents />
+      </RequireAuth>} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

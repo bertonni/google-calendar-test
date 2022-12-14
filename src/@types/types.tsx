@@ -227,3 +227,8 @@ export interface IAlertProps {
   message: IMessage | null;
   close?: () => void;
 }
+
+export interface LayoutCompProps {
+  children: ReactNode;
+  dontShowLogin?: boolean;
+}
