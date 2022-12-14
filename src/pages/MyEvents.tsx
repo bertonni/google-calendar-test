@@ -22,7 +22,7 @@ const MyEvents = () => {
     <Layout>
       <div className="flex h-full w-full flex-col items-center relative gap-4 px-4">
         <h1 className="text-3xl text-gray-600 font-medium mt-20 flex items-center gap-4">Eventos
-        <button onClick={() => navigate("/")}>home</button>
+        {/* <button onClick={() => navigate("/")}>home</button> */}
         </h1>
         <div className="flex items-center justify-center flex-wrap gap-2">
           {events?.length > 0 &&

@@ -32,7 +32,7 @@ const Calendar = () => {
       <div className="w-full flex flex-col items-center gap-2 px-20 2xl:px-40
         justify-center">
         <h1 className="text-4xl text-gray-600 font-medium mb-6 flex items-center gap-4">Agenda {lab}
-        <button onClick={() => navigate("/my-events")}>events</button>
+        {/* <button onClick={() => navigate("/my-events")}>events</button> */}
         </h1>
         <MyCalendar />
       </div>
